@@ -42,7 +42,7 @@ export function Faq() {
     const [openIndex, setOpenIndex] = useState<number | null>(-1);
 
     return (
-        <section id="faq" className="mx-auto mt-20 max-w-3xl px-6">
+        <section id="faq" className="mx-auto mt-20 max-w-6xl px-6">
             <h2 className="text-2xl font-bold text-white">
                 Frequently asked questions
             </h2>

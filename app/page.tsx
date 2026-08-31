@@ -1,4 +1,3 @@
-import { SiteHeader } from "@/components/site-header";
 import { Hero } from "@/components/hero";
 import { StatsBar } from "@/components/stats-bar";
 import { LanguageBreakdown } from "@/components/language-breakdown";
@@ -8,26 +7,45 @@ import { RecentReleases } from "@/components/recent-releases";
 import { TopCreators } from "@/components/top-creators";
 import { Faq } from "@/components/faq";
 import { DeveloperCta } from "@/components/developer-cta";
-import { SiteFooter } from "@/components/site-footer";
 import { Reveal } from "@/components/reveal";
+import { getBaseUrl } from "@/lib/base-url";
 import {
-    getRepoStats,
-    getLanguageBreakdown,
-    getRecentReleases,
-    getLatestStableRelease,
-    getTopContributors,
     timeAgo,
+    type Contributor,
+    type LanguageShare,
     type Release,
+    type RepoStats,
 } from "@/lib/github";
 
+async function fetchJson<T>(url: string, fallback: T): Promise<T> {
+    try {
+        const res = await fetch(url);
+        if (!res.ok) return fallback;
+        return (await res.json()) as T;
+    } catch {
+        return fallback;
+    }
+}
+
 export default async function Home() {
+    const baseUrl = await getBaseUrl();
+
     const [stats, languages, releases, latestStableRelease, contributors] =
         await Promise.all([
-            getRepoStats(),
-            getLanguageBreakdown(),
-            getRecentReleases(20),
-            getLatestStableRelease(),
-            getTopContributors(),
+            fetchJson<RepoStats>(`${baseUrl}/api/github/stats`, {
+                stars: 0,
+                forks: 0,
+                openIssues: 0,
+                pushedAt: null,
+                url: "",
+            }),
+            fetchJson<LanguageShare[]>(`${baseUrl}/api/github/languages`, []),
+            fetchJson<Release[]>(`${baseUrl}/api/github/releases?limit=20`, []),
+            fetchJson<Release | null>(
+                `${baseUrl}/api/github/latest-stable`,
+                null,
+            ),
+            fetchJson<Contributor[]>(`${baseUrl}/api/github/contributors`, []),
         ]);
 
     const latestBeta =
@@ -38,44 +56,40 @@ export default async function Home() {
     );
 
     return (
-        <div className="flex flex-1 flex-col bg-background">
-            <SiteHeader />
-            <main className="flex-1">
-                <Hero
-                    latestBeta={latestBeta}
-                    latestStable={latestStableRelease?.tag ?? null}
+        <>
+            <Hero
+                latestBeta={latestBeta}
+                latestStable={latestStableRelease?.tag ?? null}
+            />
+            <Reveal>
+                <StatsBar
+                    stars={stats.stars}
+                    forks={stats.forks}
+                    openIssues={stats.openIssues}
+                    lastPush={timeAgo(stats.pushedAt)}
                 />
-                <Reveal>
-                    <StatsBar
-                        stars={stats.stars}
-                        forks={stats.forks}
-                        openIssues={stats.openIssues}
-                        lastPush={timeAgo(stats.pushedAt)}
-                    />
-                </Reveal>
-                <Reveal delay={80}>
-                    <LanguageBreakdown languages={languages} />
-                </Reveal>
-                <Reveal>
-                    <WhySwiftly />
-                </Reveal>
-                <Reveal>
-                    <CapabilityGrid />
-                </Reveal>
-                <Reveal>
-                    <RecentReleases releases={releaseFeed} />
-                </Reveal>
-                <Reveal>
-                    <TopCreators contributors={contributors} />
-                </Reveal>
-                <Reveal>
-                    <Faq />
-                </Reveal>
-                <Reveal>
-                    <DeveloperCta />
-                </Reveal>
-            </main>
-            <SiteFooter />
-        </div>
+            </Reveal>
+            <Reveal delay={80}>
+                <LanguageBreakdown languages={languages} />
+            </Reveal>
+            <Reveal>
+                <WhySwiftly />
+            </Reveal>
+            <Reveal>
+                <CapabilityGrid />
+            </Reveal>
+            <Reveal>
+                <RecentReleases releases={releaseFeed} />
+            </Reveal>
+            <Reveal>
+                <TopCreators contributors={contributors} />
+            </Reveal>
+            <Reveal>
+                <Faq />
+            </Reveal>
+            <Reveal>
+                <DeveloperCta />
+            </Reveal>
+        </>
     );
 }

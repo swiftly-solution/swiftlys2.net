@@ -10,7 +10,7 @@ export function DeveloperCta() {
                 <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
                     <div
                         className="animate-drift-a absolute left-1/2 top-1/2 h-[360px] w-[480px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
-                        style={{ background: "rgba(0,254,237,0.14)" }}
+                        style={{ background: "rgba(0,254,237,0.07)" }}
                     />
                 </div>
                 <h2 className="text-2xl font-bold text-white sm:text-3xl">

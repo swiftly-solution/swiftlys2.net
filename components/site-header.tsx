@@ -8,6 +8,7 @@ const CRUMBS = [
     { label: "docs", href: "/docs" },
     { label: "github", href: REPO_URL },
     { label: "discord", href: DISCORD_URL },
+    { label: "schema", href: "/schema-viewer" },
 ];
 
 export function SiteHeader() {

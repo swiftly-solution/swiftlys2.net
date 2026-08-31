@@ -2,9 +2,9 @@ const OWNER = "swiftly-solution";
 const REPO = "swiftlys2";
 const REPO_URL = `https://github.com/${OWNER}/${REPO}`;
 const API_BASE = `https://api.github.com/repos/${OWNER}/${REPO}`;
-const REVALIDATE_SECONDS = 3600;
+const REVALIDATE_SECONDS = 60;
 
-function githubHeaders() {
+export function githubHeaders() {
     const headers: Record<string, string> = {
         Accept: "application/vnd.github+json",
     };
@@ -33,24 +33,30 @@ export type RepoStats = {
     url: string;
 };
 
+let cachedRepoStats: RepoStats | null = null;
+
 export async function getRepoStats(): Promise<RepoStats> {
     try {
         const data = await githubFetch("");
-        return {
+        const stats: RepoStats = {
             stars: data.stargazers_count ?? 0,
             forks: data.forks_count ?? 0,
             openIssues: data.open_issues_count ?? 0,
             pushedAt: data.pushed_at ?? null,
             url: data.html_url ?? REPO_URL,
         };
+        cachedRepoStats = stats;
+        return stats;
     } catch {
-        return {
-            stars: 0,
-            forks: 0,
-            openIssues: 0,
-            pushedAt: null,
-            url: REPO_URL,
-        };
+        return (
+            cachedRepoStats ?? {
+                stars: 0,
+                forks: 0,
+                openIssues: 0,
+                pushedAt: null,
+                url: REPO_URL,
+            }
+        );
     }
 }
 
@@ -58,6 +64,8 @@ export type LanguageShare = {
     name: string;
     percent: number;
 };
+
+let cachedLanguages: LanguageShare[] | null = null;
 
 export async function getLanguageBreakdown(): Promise<LanguageShare[]> {
     try {
@@ -69,12 +77,19 @@ export async function getLanguageBreakdown(): Promise<LanguageShare[]> {
             (sum, bytes) => sum + bytes,
             0,
         );
-        if (total === 0) return [];
-        return Object.entries(data)
-            .map(([name, bytes]) => ({ name, percent: (bytes / total) * 100 }))
-            .sort((a, b) => b.percent - a.percent);
+        const languages =
+            total === 0
+                ? []
+                : Object.entries(data)
+                      .map(([name, bytes]) => ({
+                          name,
+                          percent: (bytes / total) * 100,
+                      }))
+                      .sort((a, b) => b.percent - a.percent);
+        cachedLanguages = languages;
+        return languages;
     } catch {
-        return [];
+        return cachedLanguages ?? [];
     }
 }
 
@@ -85,27 +100,36 @@ export type Release = {
     prerelease: boolean;
 };
 
+const cachedReleases = new Map<number, Release[]>();
+
 export async function getRecentReleases(limit = 6): Promise<Release[]> {
     try {
         const data = await githubFetch(`/releases?per_page=${limit}`);
-        return (data as Array<Record<string, unknown>>).map((release) => ({
-            tag:
-                (release.tag_name as string) ??
-                (release.name as string) ??
-                "release",
-            publishedAt: (release.published_at as string) ?? null,
-            url: (release.html_url as string) ?? REPO_URL,
-            prerelease: Boolean(release.prerelease),
-        }));
+        const releases = (data as Array<Record<string, unknown>>).map(
+            (release) => ({
+                tag:
+                    (release.tag_name as string) ??
+                    (release.name as string) ??
+                    "release",
+                publishedAt: (release.published_at as string) ?? null,
+                url: (release.html_url as string) ?? REPO_URL,
+                prerelease: Boolean(release.prerelease),
+            }),
+        );
+        cachedReleases.set(limit, releases);
+        return releases;
     } catch {
-        return [];
+        return cachedReleases.get(limit) ?? [];
     }
 }
+
+let cachedLatestStable: Release | null = null;
+let hasFetchedLatestStable = false;
 
 export async function getLatestStableRelease(): Promise<Release | null> {
     try {
         const release = await githubFetch("/releases/latest");
-        return {
+        const result: Release = {
             tag:
                 (release.tag_name as string) ??
                 (release.name as string) ??
@@ -114,8 +138,11 @@ export async function getLatestStableRelease(): Promise<Release | null> {
             url: (release.html_url as string) ?? REPO_URL,
             prerelease: false,
         };
+        cachedLatestStable = result;
+        hasFetchedLatestStable = true;
+        return result;
     } catch {
-        return null;
+        return hasFetchedLatestStable ? cachedLatestStable : null;
     }
 }
 
@@ -126,17 +153,23 @@ export type Contributor = {
     url: string;
 };
 
+const cachedContributors = new Map<number, Contributor[]>();
+
 export async function getTopContributors(limit = 8): Promise<Contributor[]> {
     try {
         const data = await githubFetch(`/contributors?per_page=${limit}`);
-        return (data as Array<Record<string, unknown>>).map((c) => ({
-            login: c.login as string,
-            avatarUrl: c.avatar_url as string,
-            contributions: c.contributions as number,
-            url: c.html_url as string,
-        }));
+        const contributors = (data as Array<Record<string, unknown>>).map(
+            (c) => ({
+                login: c.login as string,
+                avatarUrl: c.avatar_url as string,
+                contributions: c.contributions as number,
+                url: c.html_url as string,
+            }),
+        );
+        cachedContributors.set(limit, contributors);
+        return contributors;
     } catch {
-        return [];
+        return cachedContributors.get(limit) ?? [];
     }
 }
 

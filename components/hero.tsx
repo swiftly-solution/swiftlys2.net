@@ -24,21 +24,9 @@ export function Hero({
                     backgroundImage:
                         "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
                     backgroundSize: "48px 48px",
-                    maskImage:
-                        "radial-gradient(ellipse 60% 50% at 50% 20%, black, transparent)",
+                    maskImage: "linear-gradient(to bottom, black, transparent)",
                 }}
             />
-            <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[520px] overflow-hidden">
-                <div
-                    className="animate-drift-a absolute left-1/2 top-0 h-[420px] w-[620px] -translate-x-1/2 rounded-full blur-3xl"
-                    style={{ background: "rgba(255,140,60,0.18)" }}
-                />
-                <div
-                    className="animate-drift-b absolute left-1/2 top-10 h-[360px] w-[520px] -translate-x-1/2 rounded-full blur-3xl"
-                    style={{ background: "rgba(0,254,237,0.12)" }}
-                />
-            </div>
-
             <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
                 <div>
                     <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 font-mono text-xs text-zinc-400">
