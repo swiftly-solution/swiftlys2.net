@@ -49,7 +49,7 @@ export function Hero({
                         {badgeText}
                     </div>
 
-                    <h1 className="mt-8 text-4xl font-bold tracking-tight text-zinc-300 sm:text-5xl">
+                    <h1 className="mt-8 text-3xl font-bold tracking-tight text-zinc-300 sm:text-4xl lg:text-5xl">
                         A C# framework for{" "}
                         <span className="text-accent">Source 2</span> servers.
                     </h1>

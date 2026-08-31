@@ -17,7 +17,7 @@ export function TerminalWindow({
                     {title}
                 </span>
             </div>
-            <div className="p-5 font-mono text-sm leading-relaxed">
+            <div className="overflow-x-auto p-4 font-mono text-xs leading-relaxed sm:p-5 sm:text-sm">
                 {children}
             </div>
         </div>

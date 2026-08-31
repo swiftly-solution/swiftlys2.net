@@ -9,12 +9,12 @@ export function RecentReleases({ releases }: { releases: Release[] }) {
     return (
         <section id="releases" className="mx-auto mt-16 max-w-6xl px-6">
             <div className="overflow-hidden rounded-xl border border-white/10 bg-zinc-950 font-mono text-sm">
-                <div className="flex items-center justify-between border-b border-white/10 px-5 py-3 text-xs text-zinc-500">
-                    <span>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-5 py-3 text-xs text-zinc-500">
+                    <span className="break-all">
                         <span className="text-zinc-600">$</span> tail -f {path}
                         /releases
                     </span>
-                    <span className="flex items-center gap-1.5 text-accent">
+                    <span className="flex shrink-0 items-center gap-1.5 text-accent">
                         <span className="relative flex h-1.5 w-1.5">
                             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
                             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />

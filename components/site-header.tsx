@@ -13,33 +13,28 @@ const CRUMBS = [
 export function SiteHeader() {
     return (
         <header className="sticky top-0 z-50 border-b border-white/10 bg-black/60 backdrop-blur-md">
-            <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6 font-mono text-sm">
-                <div className="flex items-center gap-2 text-zinc-500">
-                    <Image
-                        src="/icon.png"
-                        alt=""
-                        width={18}
-                        height={18}
-                        className="shrink-0"
-                    />
-                    <Link href="/" className="font-semibold text-white">
-                        swiftlys2
-                    </Link>
-                    {CRUMBS.map((crumb) => (
-                        <span
-                            key={crumb.label}
-                            className="flex items-center gap-2"
+            <div className="mx-auto flex min-h-14 max-w-6xl flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3 font-mono text-xs text-zinc-500 sm:px-6 sm:text-sm">
+                <Image
+                    src="/icon.png"
+                    alt=""
+                    width={18}
+                    height={18}
+                    className="shrink-0"
+                />
+                <Link href="/" className="font-semibold text-white">
+                    swiftlys2
+                </Link>
+                {CRUMBS.map((crumb) => (
+                    <span key={crumb.label} className="flex items-center gap-2">
+                        <span className="text-zinc-700">/</span>
+                        <Link
+                            href={crumb.href}
+                            className="transition-colors hover:text-white"
                         >
-                            <span className="text-zinc-700">/</span>
-                            <Link
-                                href={crumb.href}
-                                className="transition-colors hover:text-white"
-                            >
-                                {crumb.label}
-                            </Link>
-                        </span>
-                    ))}
-                </div>
+                            {crumb.label}
+                        </Link>
+                    </span>
+                ))}
             </div>
         </header>
     );

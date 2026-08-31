@@ -1,7 +1,7 @@
 import { CountUp } from "@/components/count-up";
 import { REPO_URL } from "@/lib/github";
 
-const STAT_STYLES = "px-8 py-6";
+const STAT_STYLES = "px-4 py-5 sm:px-8 sm:py-6";
 
 export function StatsBar({
     stars,
@@ -27,11 +27,11 @@ export function StatsBar({
     return (
         <div className="mx-auto max-w-6xl px-6">
             <div className="overflow-hidden rounded-xl border border-white/10 bg-zinc-950">
-                <div className="flex items-center justify-between border-b border-white/10 px-5 py-3 font-mono text-xs text-zinc-500">
-                    <span>
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-5 py-3 font-mono text-xs text-zinc-500">
+                    <span className="break-all">
                         <span className="text-zinc-600">$</span> curl {apiPath}
                     </span>
-                    <span className="flex items-center gap-1.5 text-accent">
+                    <span className="flex shrink-0 items-center gap-1.5 text-accent">
                         <span className="relative flex h-1.5 w-1.5">
                             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
                             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
