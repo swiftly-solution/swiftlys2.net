@@ -6,6 +6,14 @@ import type {
     EnumMemberDiff,
     SchemaDiff,
 } from "@/lib/schema/diff";
+import type { SchemaField } from "@/lib/schema/types";
+
+function fieldTypeLabel(field: SchemaField): string {
+    const type = field.templated ?? field.type;
+    return field.kind === "fixed_array" && field.element_count !== undefined
+        ? `${type} x ${field.element_count}`
+        : type;
+}
 
 const CHANGE_STYLES: Record<
     "added" | "removed" | "changed",
@@ -26,16 +34,20 @@ function FieldDiffRow({ field }: { field: FieldDiff }) {
                 />
                 <span className="font-semibold text-white">{field.name}</span>
                 {field.change === "added" && field.after && (
-                    <span className="text-zinc-400">{field.after.type}</span>
+                    <span className="text-zinc-400">
+                        {fieldTypeLabel(field.after)}
+                    </span>
                 )}
                 {field.change === "removed" && field.before && (
-                    <span className="text-zinc-400">{field.before.type}</span>
+                    <span className="text-zinc-400">
+                        {fieldTypeLabel(field.before)}
+                    </span>
                 )}
                 {field.change === "changed" && field.before && field.after && (
                     <span className="text-zinc-400">
-                        {field.before.type}{" "}
+                        {fieldTypeLabel(field.before)}{" "}
                         <span className="text-zinc-600">&rarr;</span>{" "}
-                        {field.after.type}
+                        {fieldTypeLabel(field.after)}
                     </span>
                 )}
             </div>
