@@ -107,39 +107,24 @@ export function ClassDetail({
                                             : field.name}
                                     </span>
                                     <span className="text-zinc-600">:</span>
-                                    {isCsharp ? (
-                                        <TypeLink
-                                            name={field.type}
-                                            displayName={field.csharpType}
-                                            link={field.typeLink}
-                                            gameId={gameId}
-                                        />
-                                    ) : (
-                                        <>
-                                            <TypeLink
-                                                name={field.type}
-                                                link={field.typeLink}
-                                                gameId={gameId}
-                                            />
-                                            {field.kind === "fixed_array" &&
-                                                field.element_count !==
-                                                    undefined && (
-                                                    <span className="text-zinc-600">
-                                                        &times;{" "}
-                                                        {field.element_count}
-                                                    </span>
-                                                )}
-                                            {field.kind === "atomic" &&
-                                                field.templated &&
-                                                field.templated !==
-                                                    field.type && (
-                                                    <span className="text-zinc-600">
-                                                        &lt;{field.templated}
-                                                        &gt;
-                                                    </span>
-                                                )}
-                                        </>
-                                    )}
+                                    <TypeLink
+                                        name={field.type}
+                                        displayName={
+                                            isCsharp
+                                                ? field.csharpType
+                                                : (field.templated ??
+                                                  field.type)
+                                        }
+                                        link={field.typeLink}
+                                        gameId={gameId}
+                                    />
+                                    {!isCsharp &&
+                                        field.kind === "fixed_array" &&
+                                        field.element_count !== undefined && (
+                                            <span className="text-zinc-600">
+                                                &times; {field.element_count}
+                                            </span>
+                                        )}
                                     {field.networked && (
                                         <span className="rounded bg-accent/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-accent">
                                             net

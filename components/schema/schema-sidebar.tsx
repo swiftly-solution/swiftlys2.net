@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ModuleIndexEntry } from "@/lib/schema/queries";
@@ -14,19 +14,86 @@ type Row =
           kind: "class" | "enum";
       };
 
+type StreamMessage =
+    | { type: "module"; project: string; count: number }
+    | { type: "item"; project: string; name: string; kind: "class" | "enum" };
+
+type Status = "loading" | "done" | "error";
+
 const HEADER_ROW_HEIGHT = 40;
 const ITEM_ROW_HEIGHT = 30;
 
-export function SchemaSidebar({
-    modules,
-    gameId,
-}: {
-    modules: ModuleIndexEntry[];
-    gameId: string;
-}) {
+export function SchemaSidebar({ gameId }: { gameId: string }) {
+    const [modules, setModules] = useState<ModuleIndexEntry[]>([]);
+    const [status, setStatus] = useState<Status>("loading");
     const [query, setQuery] = useState("");
     const [openModules, setOpenModules] = useState<Set<string>>(new Set());
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const order: string[] = [];
+        const byProject = new Map<string, ModuleIndexEntry>();
+        let cancelled = false;
+
+        setModules([]);
+        setStatus("loading");
+
+        async function run() {
+            try {
+                const res = await fetch(`/api/schema/modules?game=${gameId}`);
+                if (!res.ok || !res.body) {
+                    if (!cancelled) setStatus("error");
+                    return;
+                }
+
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = "";
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split("\n");
+                    buffer = lines.pop() ?? "";
+
+                    for (const line of lines) {
+                        if (!line) continue;
+                        const msg = JSON.parse(line) as StreamMessage;
+
+                        let mod = byProject.get(msg.project);
+                        if (!mod) {
+                            mod = { project: msg.project, items: [] };
+                            byProject.set(msg.project, mod);
+                            order.push(msg.project);
+                        }
+                        if (msg.type === "item") {
+                            mod.items.push({ name: msg.name, kind: msg.kind });
+                        }
+                    }
+
+                    if (!cancelled) {
+                        setModules(
+                            order.map((project) => {
+                                const mod = byProject.get(project)!;
+                                return { project, items: [...mod.items] };
+                            }),
+                        );
+                    }
+                }
+
+                if (!cancelled) setStatus("done");
+            } catch {
+                if (!cancelled) setStatus("error");
+            }
+        }
+
+        run();
+        return () => {
+            cancelled = true;
+        };
+    }, [gameId]);
 
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -104,11 +171,19 @@ export function SchemaSidebar({
                 ref={scrollRef}
                 className="max-h-[calc(100vh-11rem)] overflow-y-auto"
             >
-                {rows.length === 0 ? (
+                {status === "error" && (
+                    <p className="px-4 py-6 text-center font-mono text-xs text-zinc-600">
+                        Schema data is temporarily unavailable.
+                    </p>
+                )}
+
+                {status === "done" && rows.length === 0 && (
                     <p className="px-4 py-6 text-center font-mono text-xs text-zinc-600">
                         No matches.
                     </p>
-                ) : (
+                )}
+
+                {rows.length > 0 && (
                     <div
                         style={{
                             height: virtualizer.getTotalSize(),

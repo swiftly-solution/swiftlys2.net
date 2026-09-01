@@ -1,18 +1,28 @@
-import type { SchemaDump, SchemaField } from "@/lib/schema/types";
+import type { SchemaClass, SchemaDump, SchemaField } from "@/lib/schema/types";
+import {
+    getClassFieldDisplays,
+    toInterfaceName,
+} from "@/lib/schema/codegen/csharp";
 
 export type ChangeKind = "added" | "removed" | "changed";
+
+export type DiffField = SchemaField & {
+    csharpName: string;
+    csharpType: string;
+};
 
 export type FieldDiff = {
     name: string;
     change: ChangeKind;
-    before?: SchemaField;
-    after?: SchemaField;
+    before?: DiffField;
+    after?: DiffField;
 };
 
 export type ClassDiff = {
     key: string;
     project: string;
     name: string;
+    csharpName: string;
     change: ChangeKind;
     fieldDiffs: FieldDiff[];
     baseClassesChanged: boolean;
@@ -32,6 +42,7 @@ export type EnumDiff = {
     key: string;
     project: string;
     name: string;
+    csharpName: string;
     change: ChangeKind;
     memberDiffs: EnumMemberDiff[];
 };
@@ -57,9 +68,41 @@ function fieldsEqual(a: SchemaField, b: SchemaField): boolean {
     );
 }
 
-function diffFields(before: SchemaField[], after: SchemaField[]): FieldDiff[] {
-    const beforeByName = new Map(before.map((f) => [f.name, f]));
-    const afterByName = new Map(after.map((f) => [f.name, f]));
+function fieldDisplaysByName(
+    cls: SchemaClass,
+    allClassNames: Set<string>,
+    allEnumNames: Set<string>,
+): Map<string, DiffField> {
+    const fields = cls.fields ?? [];
+    const displays = getClassFieldDisplays(cls, allClassNames, allEnumNames);
+    return new Map(
+        fields.map((field, i) => [
+            field.name,
+            {
+                ...field,
+                csharpName: displays[i].name,
+                csharpType: displays[i].type,
+            },
+        ]),
+    );
+}
+
+function diffFields(
+    beforeClass: SchemaClass,
+    afterClass: SchemaClass,
+    beforeNames: { classes: Set<string>; enums: Set<string> },
+    afterNames: { classes: Set<string>; enums: Set<string> },
+): FieldDiff[] {
+    const beforeByName = fieldDisplaysByName(
+        beforeClass,
+        beforeNames.classes,
+        beforeNames.enums,
+    );
+    const afterByName = fieldDisplaysByName(
+        afterClass,
+        afterNames.classes,
+        afterNames.enums,
+    );
     const diffs: FieldDiff[] = [];
 
     for (const [name, field] of beforeByName) {
@@ -88,6 +131,17 @@ export function computeSchemaDiff(
     before: SchemaDump,
     after: SchemaDump,
 ): SchemaDiff {
+    const beforeNames = {
+        classes: new Set(
+            before.classes.map((c) => c.name.replaceAll(":", "_")),
+        ),
+        enums: new Set(before.enums.map((e) => e.name.replaceAll(":", "_"))),
+    };
+    const afterNames = {
+        classes: new Set(after.classes.map((c) => c.name.replaceAll(":", "_"))),
+        enums: new Set(after.enums.map((e) => e.name.replaceAll(":", "_"))),
+    };
+
     const beforeClasses = new Map(
         before.classes.map((c) => [keyOf(c.project, c.name), c]),
     );
@@ -109,6 +163,7 @@ export function computeSchemaDiff(
                 key,
                 project: b.project,
                 name: b.name,
+                csharpName: toInterfaceName(b.name),
                 change: "removed",
                 fieldDiffs: [],
                 baseClassesChanged: false,
@@ -122,6 +177,7 @@ export function computeSchemaDiff(
                 key,
                 project: a.project,
                 name: a.name,
+                csharpName: toInterfaceName(a.name),
                 change: "added",
                 fieldDiffs: [],
                 baseClassesChanged: false,
@@ -131,7 +187,7 @@ export function computeSchemaDiff(
             continue;
         }
         if (a && b) {
-            const fieldDiffs = diffFields(b.fields ?? [], a.fields ?? []);
+            const fieldDiffs = diffFields(b, a, beforeNames, afterNames);
             const baseClassesChanged =
                 JSON.stringify(b.base_classes ?? []) !==
                 JSON.stringify(a.base_classes ?? []);
@@ -142,6 +198,7 @@ export function computeSchemaDiff(
                     key,
                     project: a.project,
                     name: a.name,
+                    csharpName: toInterfaceName(a.name),
                     change: "changed",
                     fieldDiffs,
                     baseClassesChanged,
@@ -171,6 +228,7 @@ export function computeSchemaDiff(
                 key,
                 project: b.project,
                 name: b.name,
+                csharpName: toInterfaceName(b.name),
                 change: "removed",
                 memberDiffs: [],
             });
@@ -181,6 +239,7 @@ export function computeSchemaDiff(
                 key,
                 project: a.project,
                 name: a.name,
+                csharpName: toInterfaceName(a.name),
                 change: "added",
                 memberDiffs: [],
             });
@@ -223,6 +282,7 @@ export function computeSchemaDiff(
                     key,
                     project: a.project,
                     name: a.name,
+                    csharpName: toInterfaceName(a.name),
                     change: "changed",
                     memberDiffs,
                 });

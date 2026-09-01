@@ -1,13 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { History } from "lucide-react";
-import { getBaseUrl } from "@/lib/base-url";
 import { GAMES, getGame } from "@/lib/schema/games";
 import { GameSwitcher } from "@/components/schema/game-switcher";
 import { LanguageProvider } from "@/components/schema/language-context";
 import { LanguageSwitcher } from "@/components/schema/language-switcher";
 import { SchemaSidebar } from "@/components/schema/schema-sidebar";
-import type { ModuleIndexEntry } from "@/lib/schema/queries";
 
 export default async function SchemaGameLayout(
     props: LayoutProps<"/schema-viewer/[game]">,
@@ -17,18 +15,6 @@ export default async function SchemaGameLayout(
     if (!game) {
         notFound();
     }
-
-    const baseUrl = await getBaseUrl();
-    const res = await fetch(`${baseUrl}/api/schema/modules?game=${gameId}`);
-
-    if (!res.ok) {
-        return (
-            <div className="mt-8 text-center text-sm text-zinc-500">
-                Schema data is temporarily unavailable - try again shortly.
-            </div>
-        );
-    }
-    const modules: ModuleIndexEntry[] = await res.json();
 
     return (
         <LanguageProvider>
@@ -45,7 +31,7 @@ export default async function SchemaGameLayout(
             </div>
 
             <div className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
-                <SchemaSidebar modules={modules} gameId={gameId} />
+                <SchemaSidebar gameId={gameId} />
 
                 <div className="min-w-0">{props.children}</div>
             </div>
