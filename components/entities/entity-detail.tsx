@@ -91,29 +91,27 @@ export function EntityDetail({
                         <div className="font-mono text-xs uppercase tracking-wide text-zinc-500">
                             Parent Classes
                         </div>
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-sm">
                             {data.parentClasses.map((parent, i) => (
                                 <span
                                     key={parent.name}
-                                    className="flex items-center gap-2"
+                                    className="flex items-center gap-1.5"
                                 >
                                     {i > 0 && (
                                         <span className="text-zinc-700">
                                             &rsaquo;
                                         </span>
                                     )}
-                                    <span className="rounded-full border border-white/10 px-3 py-1 font-mono text-xs">
-                                        <TypeLink
-                                            name={parent.name}
-                                            displayName={
-                                                isCsharp
-                                                    ? parent.csharpName
-                                                    : parent.name
-                                            }
-                                            link={parent.link}
-                                            gameId={gameId}
-                                        />
-                                    </span>
+                                    <TypeLink
+                                        name={parent.name}
+                                        displayName={
+                                            isCsharp
+                                                ? parent.csharpName
+                                                : parent.name
+                                        }
+                                        link={parent.link}
+                                        gameId={gameId}
+                                    />
                                 </span>
                             ))}
                         </div>
@@ -129,7 +127,8 @@ export function EntityDetail({
                             {data.members.map((member) => (
                                 <div
                                     key={member.externalName}
-                                    className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm"
+                                    id={`member-${member.fieldName}`}
+                                    className="flex scroll-mt-24 flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm [&:target]:border-accent/50"
                                 >
                                     <div className="flex flex-wrap items-center gap-1.5">
                                         <span className="font-semibold text-white">
@@ -170,7 +169,8 @@ export function EntityDetail({
                             {data.inputs.map((input) => (
                                 <div
                                     key={input.externalName}
-                                    className="flex flex-wrap items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm"
+                                    id={`input-${input.externalName}`}
+                                    className="flex scroll-mt-24 flex-wrap items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm [&:target]:border-accent/50"
                                 >
                                     <span className="font-semibold text-white">
                                         {input.externalName}
@@ -194,7 +194,8 @@ export function EntityDetail({
                             {data.outputs.map((output) => (
                                 <div
                                     key={output.externalName}
-                                    className="flex flex-wrap items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm"
+                                    id={`output-${output.externalName}`}
+                                    className="flex scroll-mt-24 flex-wrap items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm [&:target]:border-accent/50"
                                 >
                                     <span className="font-semibold text-white">
                                         {output.externalName}

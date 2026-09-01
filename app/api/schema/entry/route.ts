@@ -5,6 +5,7 @@ import {
     findEntry,
     findReferences,
     resolveLink,
+    walkAncestorChain,
 } from "@/lib/schema/queries";
 import { getGame } from "@/lib/schema/games";
 import {
@@ -82,11 +83,13 @@ export async function GET(request: NextRequest) {
             size: c.size,
             alignment: c.alignment,
             is_struct: c.is_struct,
-            baseClasses: (c.base_classes ?? []).map((base) => ({
-                name: base,
-                csharpName: toInterfaceName(base),
-                link: resolve(base),
-            })),
+            baseClasses: walkAncestorChain(dump, nameIndex, c).map(
+                (ancestor) => ({
+                    name: ancestor.name,
+                    csharpName: toInterfaceName(ancestor.name),
+                    link: ancestor.link,
+                }),
+            ),
             fields: (c.fields ?? []).map((field, i) => ({
                 name: field.name,
                 csharpName: fieldDisplays[i].name,

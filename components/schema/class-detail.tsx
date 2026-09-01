@@ -89,12 +89,17 @@ export function ClassDetail({
                         <div className="font-mono text-xs uppercase tracking-wide text-zinc-500">
                             Inherits from
                         </div>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                            {data.baseClasses.map((base) => (
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5 font-mono text-sm">
+                            {data.baseClasses.map((base, i) => (
                                 <span
                                     key={base.name}
-                                    className="rounded-full border border-white/10 px-3 py-1 font-mono text-xs"
+                                    className="flex items-center gap-1.5"
                                 >
+                                    {i > 0 && (
+                                        <span className="text-zinc-700">
+                                            &rsaquo;
+                                        </span>
+                                    )}
                                     <TypeLink
                                         name={base.name}
                                         displayName={

@@ -106,6 +106,41 @@ export function findReferences(dump: SchemaDump, name: string): Reference[] {
     return refs;
 }
 
+export type AncestorClass = { name: string; link: ResolvedLink | null };
+
+const MAX_ANCESTOR_DEPTH = 32;
+
+export function walkAncestorChain(
+    dump: SchemaDump,
+    nameIndex: Map<string, ResolvedLink[]>,
+    startClass: SchemaClass,
+): AncestorClass[] {
+    const chain: AncestorClass[] = [];
+    let current: SchemaClass | undefined = startClass;
+    const seen = new Set<string>();
+
+    for (
+        let depth = 0;
+        depth < MAX_ANCESTOR_DEPTH && current?.base_classes?.[0];
+        depth++
+    ) {
+        const baseName: string = current.base_classes[0];
+        if (seen.has(baseName)) break;
+        seen.add(baseName);
+
+        const link = resolveLink(nameIndex, baseName, current.project);
+        chain.push({ name: baseName, link });
+
+        current = link
+            ? dump.classes.find(
+                  (c) => c.project === link.project && c.name === baseName,
+              )
+            : undefined;
+    }
+
+    return chain;
+}
+
 export type FoundEntry =
     { kind: "class"; entry: SchemaClass } | { kind: "enum"; entry: SchemaEnum };
 

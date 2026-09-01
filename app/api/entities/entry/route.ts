@@ -2,55 +2,21 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getEntitiesDump } from "@/lib/entities/dump";
 import { findEntityEntry } from "@/lib/entities/queries";
 import { getSchemaDump } from "@/lib/schema/dump";
-import { buildNameIndex, resolveLink } from "@/lib/schema/queries";
+import {
+    buildNameIndex,
+    resolveLink,
+    walkAncestorChain,
+} from "@/lib/schema/queries";
 import { getGame } from "@/lib/schema/games";
 import {
     getClassFieldDisplays,
     toInterfaceName,
 } from "@/lib/schema/codegen/csharp";
 import type { ResolvedLink } from "@/lib/schema/queries";
-import type { SchemaClass, SchemaDump } from "@/lib/schema/types";
 import type {
     EntityEntryResponse,
     ParentClassPayload,
 } from "@/lib/entities/types";
-
-const MAX_ANCESTOR_DEPTH = 32;
-
-function walkAncestorChain(
-    schemaDump: SchemaDump,
-    nameIndex: Map<string, ResolvedLink[]>,
-    startClass: SchemaClass,
-): ParentClassPayload[] {
-    const chain: ParentClassPayload[] = [];
-    let current: SchemaClass | undefined = startClass;
-    const seen = new Set<string>();
-
-    for (
-        let depth = 0;
-        depth < MAX_ANCESTOR_DEPTH && current?.base_classes?.[0];
-        depth++
-    ) {
-        const baseName: string = current.base_classes[0];
-        if (seen.has(baseName)) break;
-        seen.add(baseName);
-
-        const link = resolveLink(nameIndex, baseName, "server");
-        chain.push({
-            name: baseName,
-            csharpName: toInterfaceName(baseName),
-            link,
-        });
-
-        current = link
-            ? schemaDump.classes.find(
-                  (c) => c.project === link.project && c.name === baseName,
-              )
-            : undefined;
-    }
-
-    return chain;
-}
 
 export async function GET(request: NextRequest) {
     const gameId = request.nextUrl.searchParams.get("game");
@@ -110,7 +76,15 @@ export async function GET(request: NextRequest) {
                     csharpFieldNames.set(field.name, displays[i].name);
                 });
 
-                parentClasses = walkAncestorChain(schemaDump, nameIndex, cls);
+                parentClasses = walkAncestorChain(
+                    schemaDump,
+                    nameIndex,
+                    cls,
+                ).map((ancestor) => ({
+                    name: ancestor.name,
+                    csharpName: toInterfaceName(ancestor.name),
+                    link: ancestor.link,
+                }));
             }
         }
     } catch {
