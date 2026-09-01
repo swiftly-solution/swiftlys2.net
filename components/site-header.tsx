@@ -10,6 +10,7 @@ const CRUMBS = [
     { label: "discord", href: DISCORD_URL },
     { label: "schema", href: "/schema-viewer" },
     { label: "convars", href: "/convars-viewer" },
+    { label: "entity", href: "/entity-viewer" },
 ];
 
 export function SiteHeader() {

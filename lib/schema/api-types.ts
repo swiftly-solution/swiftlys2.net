@@ -32,6 +32,7 @@ export type ClassEntryResponse = {
     baseClasses: BaseClassPayload[];
     fields: FieldPayload[];
     references: Reference[];
+    hasEntityData: boolean;
 };
 
 export type EnumEntryResponse = {

@@ -11,6 +11,8 @@ import {
     getClassFieldDisplays,
     toInterfaceName,
 } from "@/lib/schema/codegen/csharp";
+import { getEntitiesDump } from "@/lib/entities/dump";
+import { hasDatamap } from "@/lib/entities/queries";
 import type {
     ClassEntryResponse,
     EnumEntryResponse,
@@ -63,6 +65,15 @@ export async function GET(request: NextRequest) {
             allClassNames,
             allEnumNames,
         );
+
+        let hasEntityData = false;
+        try {
+            const entitiesDump = await getEntitiesDump(gameId);
+            hasEntityData = hasDatamap(entitiesDump, c.name);
+        } catch {
+            hasEntityData = false;
+        }
+
         const response: ClassEntryResponse = {
             kind: "class",
             name: c.name,
@@ -90,6 +101,7 @@ export async function GET(request: NextRequest) {
                 templated: field.templated,
             })),
             references,
+            hasEntityData,
         };
         return NextResponse.json(response);
     }

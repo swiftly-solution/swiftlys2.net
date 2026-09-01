@@ -9,7 +9,7 @@ export function SchemaBreadcrumb({
     basePath = "/schema-viewer",
 }: {
     gameId: string;
-    project: string;
+    project?: string;
     name: string;
     displayName?: string;
     basePath?: string;
@@ -21,8 +21,12 @@ export function SchemaBreadcrumb({
             <Link href={`${basePath}/${gameId}`} className="hover:text-white">
                 {gameName}
             </Link>
-            <span className="text-zinc-700">&rsaquo;</span>
-            <span>{project}</span>
+            {project && (
+                <>
+                    <span className="text-zinc-700">&rsaquo;</span>
+                    <span>{project}</span>
+                </>
+            )}
             <span className="text-zinc-700">&rsaquo;</span>
             <span className="text-zinc-300">{displayName ?? name}</span>
         </div>

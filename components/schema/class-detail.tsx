@@ -1,6 +1,7 @@
 "use client";
 
-import { Link2 } from "lucide-react";
+import { Link2, Database } from "lucide-react";
+import Link from "next/link";
 import { SchemaBreadcrumb } from "@/components/schema/breadcrumb";
 import { TypeLink } from "@/components/schema/type-link";
 import { ReferencedBy } from "@/components/schema/referenced-by";
@@ -65,6 +66,24 @@ export function ClassDetail({
                     </div>
                 </div>
 
+                {data.hasEntityData && (
+                    <div className="mt-6">
+                        <div className="font-mono text-xs uppercase tracking-wide text-zinc-500">
+                            Entity Data
+                        </div>
+                        <div className="mt-2">
+                            <Link
+                                href={`/entity-viewer/${gameId}/${encodeURIComponent(data.name)}`}
+                                className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-3 py-1.5 font-mono text-xs text-zinc-300 transition-colors hover:border-accent/30 hover:text-accent"
+                            >
+                                <Database className="h-3.5 w-3.5 text-zinc-500" />
+                                view inputs, outputs, members &amp; think
+                                functions
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
                 {data.baseClasses.length > 0 && (
                     <div className="mt-6">
                         <div className="font-mono text-xs uppercase tracking-wide text-zinc-500">
@@ -97,7 +116,8 @@ export function ClassDetail({
                         {data.fields.map((field) => (
                             <div
                                 key={field.name}
-                                className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm"
+                                id={`field-${field.name}`}
+                                className="flex scroll-mt-24 flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm [&:target]:border-accent/50"
                             >
                                 <div className="flex flex-wrap items-center gap-1.5">
                                     <Link2 className="h-3.5 w-3.5 shrink-0 text-zinc-600" />

@@ -7,6 +7,8 @@ export type Game = {
     dumpPath: string;
     convarsPath: string;
     commandsPath: string;
+    entitiesPath: string;
+    datamapsPath: string;
 };
 
 export const GAMES: Game[] = [
@@ -19,6 +21,8 @@ export const GAMES: Game[] = [
         dumpPath: "dump/sdk.json",
         convarsPath: "dump/convars.json",
         commandsPath: "dump/commands.json",
+        entitiesPath: "dump/entities.json",
+        datamapsPath: "dump/datamaps.json",
     },
 ];
 
