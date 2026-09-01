@@ -5,6 +5,8 @@ export type Game = {
     repoOwner: string;
     repoName: string;
     dumpPath: string;
+    convarsPath: string;
+    commandsPath: string;
 };
 
 export const GAMES: Game[] = [
@@ -15,6 +17,8 @@ export const GAMES: Game[] = [
         repoOwner: "Swiftly-Tracker",
         repoName: "CS2-Dumps",
         dumpPath: "dump/sdk.json",
+        convarsPath: "dump/convars.json",
+        commandsPath: "dump/commands.json",
     },
 ];
 
@@ -24,6 +28,10 @@ export function getGame(id: string): Game | undefined {
     return GAMES.find((game) => game.id === id);
 }
 
+export function getFileUrl(game: Game, path: string, ref = "main"): string {
+    return `https://raw.githubusercontent.com/${game.repoOwner}/${game.repoName}/${ref}/${path}`;
+}
+
 export function getDumpUrl(game: Game, ref = "main"): string {
-    return `https://raw.githubusercontent.com/${game.repoOwner}/${game.repoName}/${ref}/${game.dumpPath}`;
+    return getFileUrl(game, game.dumpPath, ref);
 }

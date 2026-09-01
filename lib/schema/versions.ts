@@ -18,14 +18,18 @@ const REVALIDATE_MS = 60 * 1000;
 type CacheEntry = { versions: Version[]; fetchedAt: number };
 const cache = new Map<string, CacheEntry>();
 
-export async function getVersions(game: Game): Promise<Version[]> {
-    const cached = cache.get(game.id);
+export async function getVersions(
+    game: Game,
+    path: string,
+): Promise<Version[]> {
+    const cacheKey = `${game.id}:${path}`;
+    const cached = cache.get(cacheKey);
     if (cached && Date.now() - cached.fetchedAt < REVALIDATE_MS) {
         return cached.versions;
     }
 
     try {
-        const url = `https://api.github.com/repos/${game.repoOwner}/${game.repoName}/commits?path=${encodeURIComponent(game.dumpPath)}&per_page=100`;
+        const url = `https://api.github.com/repos/${game.repoOwner}/${game.repoName}/commits?path=${encodeURIComponent(path)}&per_page=100`;
         const res = await fetch(url, { headers: githubHeaders() });
         if (!res.ok) {
             throw new Error(`Version history fetch failed: ${res.status}`);
@@ -46,7 +50,7 @@ export async function getVersions(game: Game): Promise<Version[]> {
                 message,
             };
         });
-        cache.set(game.id, { versions, fetchedAt: Date.now() });
+        cache.set(cacheKey, { versions, fetchedAt: Date.now() });
         return versions;
     } catch (error) {
         if (cached) return cached.versions;

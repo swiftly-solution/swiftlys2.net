@@ -6,20 +6,19 @@ export function SchemaBreadcrumb({
     project,
     name,
     displayName,
+    basePath = "/schema-viewer",
 }: {
     gameId: string;
     project: string;
     name: string;
     displayName?: string;
+    basePath?: string;
 }) {
     const gameName = getGame(gameId)?.name ?? gameId;
 
     return (
         <div className="mb-4 flex flex-wrap items-center gap-2 font-mono text-xs text-zinc-500">
-            <Link
-                href={`/schema-viewer/${gameId}`}
-                className="hover:text-white"
-            >
+            <Link href={`${basePath}/${gameId}`} className="hover:text-white">
                 {gameName}
             </Link>
             <span className="text-zinc-700">&rsaquo;</span>

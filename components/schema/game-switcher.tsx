@@ -9,9 +9,11 @@ import type { Game } from "@/lib/schema/games";
 export function GameSwitcher({
     games,
     current,
+    basePath = "/schema-viewer",
 }: {
     games: Game[];
     current: Game;
+    basePath?: string;
 }) {
     const [open, setOpen] = useState(false);
 
@@ -49,7 +51,7 @@ export function GameSwitcher({
                         {games.map((game) => (
                             <Link
                                 key={game.id}
-                                href={`/schema-viewer/${game.id}`}
+                                href={`${basePath}/${game.id}`}
                                 onClick={() => setOpen(false)}
                                 className={`flex items-center gap-2 whitespace-nowrap px-3 py-2 font-mono text-sm transition-colors hover:bg-white/[0.03] ${
                                     game.id === current.id
