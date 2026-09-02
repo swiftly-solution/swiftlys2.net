@@ -1,0 +1,88 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ChevronRight } from "lucide-react";
+import { DocsSearch } from "@/components/docs/docs-search";
+
+export type DocsNavItem = {
+    slug: string;
+    title: string;
+    children?: DocsNavItem[];
+};
+
+function hrefFor(slug: string): string {
+    return slug === "_index" ? "/docs" : `/docs/${slug}`;
+}
+
+function containsPath(item: DocsNavItem, pathname: string): boolean {
+    if (hrefFor(item.slug) === pathname) return true;
+    return (
+        item.children?.some((child) => containsPath(child, pathname)) ?? false
+    );
+}
+
+function NavNode({ item, pathname }: { item: DocsNavItem; pathname: string }) {
+    const [open, setOpen] = useState(() => containsPath(item, pathname));
+    const hasChildren = (item.children?.length ?? 0) > 0;
+
+    if (!hasChildren) {
+        const href = hrefFor(item.slug);
+        const isActive = pathname === href;
+        return (
+            <Link
+                href={href}
+                className={`block rounded-lg px-3 py-2 font-mono text-sm transition-colors ${
+                    isActive
+                        ? "bg-white/5 text-accent"
+                        : "text-zinc-400 hover:bg-white/[0.03] hover:text-white"
+                }`}
+            >
+                {item.title}
+            </Link>
+        );
+    }
+
+    return (
+        <div>
+            <button
+                type="button"
+                onClick={() => setOpen((o) => !o)}
+                aria-expanded={open}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2 font-mono text-sm text-zinc-300 transition-colors hover:bg-white/[0.03] hover:text-white"
+            >
+                {item.title}
+                <ChevronRight
+                    className={`h-3.5 w-3.5 text-zinc-600 transition-transform ${open ? "rotate-90" : ""}`}
+                />
+            </button>
+            {open && (
+                <div className="ml-3 space-y-1 border-l border-white/10 pl-2">
+                    {item.children!.map((child) => (
+                        <NavNode
+                            key={child.slug}
+                            item={child}
+                            pathname={pathname}
+                        />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+export function DocsSidebar({ items }: { items: DocsNavItem[] }) {
+    const pathname = usePathname();
+
+    return (
+        <nav className="sticky top-20 h-fit space-y-3">
+            <DocsSearch />
+            <div className="space-y-1 rounded-2xl border border-white/10 bg-zinc-950/40 p-3">
+                {items.map((item) => (
+                    <NavNode key={item.slug} item={item} pathname={pathname} />
+                ))}
+            </div>
+        </nav>
+    );
+}

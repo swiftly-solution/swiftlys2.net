@@ -193,4 +193,70 @@ export function formatTimestamp(dateString: string | null): string {
     )}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
 }
 
+export type ReleaseAsset = {
+    name: string;
+    url: string;
+};
+
+export type ReleaseWithAssets = {
+    tag: string;
+    prerelease: boolean;
+    assets: ReleaseAsset[];
+};
+
+let cachedReleasesWithAssets: ReleaseWithAssets[] | null = null;
+
+export async function getReleasesWithAssets(
+    limit = 20,
+): Promise<ReleaseWithAssets[]> {
+    try {
+        const data = await githubFetch(`/releases?per_page=${limit}`);
+        const releases = (data as Array<Record<string, unknown>>).map(
+            (release) => ({
+                tag: (release.tag_name as string) ?? "release",
+                prerelease: Boolean(release.prerelease),
+                assets: (release.assets as Array<Record<string, unknown>>).map(
+                    (asset) => ({
+                        name: asset.name as string,
+                        url: asset.browser_download_url as string,
+                    }),
+                ),
+            }),
+        );
+        cachedReleasesWithAssets = releases;
+        return releases;
+    } catch {
+        return cachedReleasesWithAssets ?? [];
+    }
+}
+
+export type DownloadVariant =
+    | "latest-stable"
+    | "latest-beta"
+    | "latest-runtimes-stable"
+    | "latest-runtimes-beta";
+
+export type ResolvedDownload = { tag: string; url: string };
+
+export function findDownloadUrl(
+    releases: ReleaseWithAssets[],
+    version: DownloadVariant,
+    os: "windows" | "linux",
+): ResolvedDownload | null {
+    const wantPrerelease = version.endsWith("-beta");
+    const wantRuntimes = version.startsWith("latest-runtimes");
+
+    const release = releases.find((r) => r.prerelease === wantPrerelease);
+    if (!release) return null;
+
+    const asset = release.assets.find((a) => {
+        if (!a.name.startsWith(`swiftlys2-${os}-`)) return false;
+        if (a.name.includes("-pdb")) return false;
+        const hasRuntimes = a.name.includes("-with-runtimes");
+        return wantRuntimes ? hasRuntimes : !hasRuntimes;
+    });
+
+    return asset ? { tag: release.tag, url: asset.url } : null;
+}
+
 export { REPO_URL };

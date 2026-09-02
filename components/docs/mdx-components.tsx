@@ -1,0 +1,63 @@
+import type { ComponentProps } from "react";
+import { Callout } from "@/components/docs/callout";
+import { Box } from "@/components/docs/box";
+import { Download } from "@/components/docs/download";
+
+export const mdxComponents = {
+    Callout,
+    Box,
+    Download,
+    h1: (props: ComponentProps<"h1">) => (
+        <h1
+            className="mb-4 mt-8 font-mono text-3xl font-bold text-white first:mt-0"
+            {...props}
+        />
+    ),
+    h2: (props: ComponentProps<"h2">) => (
+        <h2
+            className="mb-3 mt-8 font-mono text-2xl font-bold text-white"
+            {...props}
+        />
+    ),
+    h3: (props: ComponentProps<"h3">) => (
+        <h3
+            className="mb-2 mt-6 font-mono text-lg font-semibold text-white"
+            {...props}
+        />
+    ),
+    p: (props: ComponentProps<"p">) => (
+        <p className="my-3 leading-relaxed text-zinc-400" {...props} />
+    ),
+    a: (props: ComponentProps<"a">) => (
+        <a className="text-accent hover:underline" {...props} />
+    ),
+    ul: (props: ComponentProps<"ul">) => (
+        <ul
+            className="my-3 list-disc space-y-1 pl-6 text-zinc-400"
+            {...props}
+        />
+    ),
+    ol: (props: ComponentProps<"ol">) => (
+        <ol
+            className="my-3 list-decimal space-y-1 pl-6 text-zinc-400"
+            {...props}
+        />
+    ),
+    li: (props: ComponentProps<"li">) => <li {...props} />,
+    code: (props: ComponentProps<"code">) => (
+        <code
+            className="rounded bg-black/40 px-1.5 py-0.5 font-mono text-[0.85em] text-accent"
+            {...props}
+        />
+    ),
+    pre: (props: ComponentProps<"pre">) => (
+        <pre
+            className="my-4 overflow-x-auto rounded-xl border border-white/10 bg-zinc-950 p-4 font-mono text-sm text-zinc-300 [&>code]:bg-transparent [&>code]:p-0 [&>code]:text-zinc-300"
+            {...props}
+        />
+    ),
+    strong: (props: ComponentProps<"strong">) => (
+        <strong className="font-semibold text-white" {...props} />
+    ),
+    hr: () => <hr className="my-8 border-white/10" />,
+};
