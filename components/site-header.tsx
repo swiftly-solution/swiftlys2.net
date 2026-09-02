@@ -11,6 +11,7 @@ const CRUMBS = [
     { label: "schema", href: "/schema-viewer" },
     { label: "convars", href: "/convars-viewer" },
     { label: "entity", href: "/entity-viewer" },
+    { label: "protobuf", href: "/protobuf-viewer" },
 ];
 
 export function SiteHeader() {
