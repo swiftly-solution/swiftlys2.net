@@ -12,6 +12,7 @@ const CRUMBS = [
     { label: "convars", href: "/convars-viewer" },
     { label: "entity", href: "/entity-viewer" },
     { label: "protobuf", href: "/protobuf-viewer" },
+    { label: "events", href: "/gameevents-viewer" },
 ];
 
 export function SiteHeader() {

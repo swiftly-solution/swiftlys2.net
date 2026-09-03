@@ -10,6 +10,7 @@ export type Game = {
     entitiesPath: string;
     datamapsPath: string;
     protobufsPath: string;
+    gameEventsPaths: { file: string; path: string }[];
 };
 
 export const GAMES: Game[] = [
@@ -25,6 +26,20 @@ export const GAMES: Game[] = [
         entitiesPath: "dump/entities.json",
         datamapsPath: "dump/datamaps.json",
         protobufsPath: "protobufs",
+        gameEventsPaths: [
+            {
+                file: "core.gameevents",
+                path: "install/game/core/pak01/resource/core.gameevents",
+            },
+            {
+                file: "game.gameevents",
+                path: "install/game/csgo/pak01/resource/game.gameevents",
+            },
+            {
+                file: "mod.gameevents",
+                path: "install/game/csgo/pak01/resource/mod.gameevents",
+            },
+        ],
     },
 ];
 
