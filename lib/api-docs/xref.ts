@@ -1,8 +1,15 @@
 import type { UidIndexEntry } from "@/lib/api-docs/tree";
+import { resolveSchemaLink, type SchemaProjectIndex } from "@/lib/api-docs/schema-links";
 
 export type InlineToken =
     | { kind: "text"; value: string }
-    | { kind: "ref"; label: string; categorySlug: string | null; typeSlug: string | null };
+    | {
+          kind: "ref";
+          label: string;
+          categorySlug: string | null;
+          typeSlug: string | null;
+          schemaHref: string | null;
+      };
 
 const XREF_PATTERN = /<xref href="([^"]+)"[^>]*>([^<]*)<\/xref>/g;
 
@@ -24,6 +31,7 @@ export function stripMarkup(text: string): string {
 export function parseInlineMarkup(
     text: string,
     uidIndex: Map<string, UidIndexEntry>,
+    schemaIndex: SchemaProjectIndex,
 ): InlineToken[] {
     const tokens: InlineToken[] = [];
     let lastIndex = 0;
@@ -42,6 +50,7 @@ export function parseInlineMarkup(
             label,
             categorySlug: entry?.categorySlug ?? null,
             typeSlug: entry?.typeSlug ?? null,
+            schemaHref: entry ? null : resolveSchemaLink(schemaIndex, href),
         });
         lastIndex = XREF_PATTERN.lastIndex;
     }

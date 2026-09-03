@@ -1,5 +1,6 @@
 import type { ApiBranch, ApiCategory, ApiType } from "@/lib/api-docs/types";
 import { slugify, type UidIndexEntry } from "@/lib/api-docs/tree";
+import type { SchemaProjectIndex } from "@/lib/api-docs/schema-links";
 import { API_ASSEMBLY_NAME } from "@/lib/api-docs/config";
 import { TypeBadge } from "@/components/api-docs/type-badge";
 import { TypeRef } from "@/components/api-docs/type-ref";
@@ -14,11 +15,13 @@ export function TypePage({
     type,
     branch,
     uidIndex,
+    schemaIndex,
 }: {
     category: ApiCategory;
     type: ApiType;
     branch: ApiBranch;
     uidIndex: Map<string, UidIndexEntry>;
+    schemaIndex: SchemaProjectIndex;
 }) {
     const sections: { title: string; members: ApiType["constructors"] }[] = [
         { title: "Constructors", members: type.constructors },
@@ -62,7 +65,12 @@ export function TypePage({
                                 {type.inherits!.map((token, i) => (
                                     <span key={i}>
                                         {i > 0 && <span className="text-zinc-600">, </span>}
-                                        <TypeRef tokens={[token]} branch={branch} uidIndex={uidIndex} />
+                                        <TypeRef
+                                            tokens={[token]}
+                                            branch={branch}
+                                            uidIndex={uidIndex}
+                                            schemaIndex={schemaIndex}
+                                        />
                                     </span>
                                 ))}
                             </div>
@@ -73,7 +81,12 @@ export function TypePage({
                                 {type.implements!.map((token, i) => (
                                     <span key={i}>
                                         {i > 0 && <span className="text-zinc-600">, </span>}
-                                        <TypeRef tokens={[token]} branch={branch} uidIndex={uidIndex} />
+                                        <TypeRef
+                                            tokens={[token]}
+                                            branch={branch}
+                                            uidIndex={uidIndex}
+                                            schemaIndex={schemaIndex}
+                                        />
                                     </span>
                                 ))}
                             </div>
@@ -82,12 +95,22 @@ export function TypePage({
                 )}
                 {type.summary && (
                     <p className="mt-4 leading-relaxed text-zinc-400">
-                        <InlineText text={type.summary} branch={branch} uidIndex={uidIndex} />
+                        <InlineText
+                            text={type.summary}
+                            branch={branch}
+                            uidIndex={uidIndex}
+                            schemaIndex={schemaIndex}
+                        />
                     </p>
                 )}
                 {type.remarks && (
                     <p className="mt-3 leading-relaxed text-zinc-500">
-                        <InlineText text={type.remarks} branch={branch} uidIndex={uidIndex} />
+                        <InlineText
+                            text={type.remarks}
+                            branch={branch}
+                            uidIndex={uidIndex}
+                            schemaIndex={schemaIndex}
+                        />
                     </p>
                 )}
                 {type.sourceUrl && (
@@ -101,7 +124,14 @@ export function TypePage({
                     </a>
                 )}
                 {sections.map(({ title, members }) => (
-                    <MemberSection key={title} title={title} members={members} branch={branch} uidIndex={uidIndex} />
+                    <MemberSection
+                        key={title}
+                        title={title}
+                        members={members}
+                        branch={branch}
+                        uidIndex={uidIndex}
+                        schemaIndex={schemaIndex}
+                    />
                 ))}
             </article>
             <div className="xl:col-start-3">

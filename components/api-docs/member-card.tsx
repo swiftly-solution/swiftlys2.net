@@ -1,5 +1,6 @@
 import type { ApiBranch, ApiMember } from "@/lib/api-docs/types";
 import { slugify, type UidIndexEntry } from "@/lib/api-docs/tree";
+import type { SchemaProjectIndex } from "@/lib/api-docs/schema-links";
 import { TypeRef } from "@/components/api-docs/type-ref";
 import { InlineText } from "@/components/api-docs/inline-markup";
 import { GithubIcon } from "@/components/github-icon";
@@ -9,11 +10,13 @@ export function MemberCard({
     member,
     branch,
     uidIndex,
+    schemaIndex,
     valueLabel = "Value",
 }: {
     member: ApiMember;
     branch: ApiBranch;
     uidIndex: Map<string, UidIndexEntry>;
+    schemaIndex: SchemaProjectIndex;
     valueLabel?: string;
 }) {
     const hasParameters = (member.parameters?.length ?? 0) > 0;
@@ -40,7 +43,12 @@ export function MemberCard({
             </div>
             {member.summary && (
                 <p className="mt-1 text-sm leading-relaxed text-zinc-400">
-                    <InlineText text={member.summary} branch={branch} uidIndex={uidIndex} />
+                    <InlineText
+                        text={member.summary}
+                        branch={branch}
+                        uidIndex={uidIndex}
+                        schemaIndex={schemaIndex}
+                    />
                 </p>
             )}
             <HighlightedCode code={member.declaration} className="mt-3" />
@@ -55,7 +63,12 @@ export function MemberCard({
                                 <span className="font-mono text-zinc-300">{param.name}</span>
                                 {param.type && (
                                     <span className="font-mono text-code-type [&_a]:text-code-type [&_a:hover]:underline">
-                                        <TypeRef tokens={param.type} branch={branch} uidIndex={uidIndex} />
+                                        <TypeRef
+                                            tokens={param.type}
+                                            branch={branch}
+                                            uidIndex={uidIndex}
+                                            schemaIndex={schemaIndex}
+                                        />
                                     </span>
                                 )}
                                 {param.optional && (
@@ -63,7 +76,12 @@ export function MemberCard({
                                 )}
                                 {param.description && (
                                     <span className="w-full text-xs text-zinc-500">
-                                        <InlineText text={param.description} branch={branch} uidIndex={uidIndex} />
+                                        <InlineText
+                                            text={param.description}
+                                            branch={branch}
+                                            uidIndex={uidIndex}
+                                            schemaIndex={schemaIndex}
+                                        />
                                     </span>
                                 )}
                             </li>
@@ -77,11 +95,21 @@ export function MemberCard({
                         Returns
                     </div>
                     <div className="font-mono text-sm text-code-type [&_a]:text-code-type [&_a:hover]:underline">
-                        <TypeRef tokens={member.returns.type} branch={branch} uidIndex={uidIndex} />
+                        <TypeRef
+                            tokens={member.returns.type}
+                            branch={branch}
+                            uidIndex={uidIndex}
+                            schemaIndex={schemaIndex}
+                        />
                     </div>
                     {member.returns.description && (
                         <div className="text-xs text-zinc-500">
-                            <InlineText text={member.returns.description} branch={branch} uidIndex={uidIndex} />
+                            <InlineText
+                                text={member.returns.description}
+                                branch={branch}
+                                uidIndex={uidIndex}
+                                schemaIndex={schemaIndex}
+                            />
                         </div>
                     )}
                 </div>
@@ -92,7 +120,12 @@ export function MemberCard({
                         {valueLabel}
                     </div>
                     <div className="font-mono text-sm text-code-type [&_a]:text-code-type [&_a:hover]:underline">
-                        <TypeRef tokens={member.valueType} branch={branch} uidIndex={uidIndex} />
+                        <TypeRef
+                            tokens={member.valueType}
+                            branch={branch}
+                            uidIndex={uidIndex}
+                            schemaIndex={schemaIndex}
+                        />
                     </div>
                 </div>
             )}
@@ -105,11 +138,21 @@ export function MemberCard({
                         {member.exceptions!.map((exception, i) => (
                             <li key={i} className="font-mono">
                                 {exception.type && (
-                                    <TypeRef tokens={exception.type} branch={branch} uidIndex={uidIndex} />
+                                    <TypeRef
+                                        tokens={exception.type}
+                                        branch={branch}
+                                        uidIndex={uidIndex}
+                                        schemaIndex={schemaIndex}
+                                    />
                                 )}
                                 {exception.description && (
                                     <span className="ml-2 text-xs text-zinc-500">
-                                        <InlineText text={exception.description} branch={branch} uidIndex={uidIndex} />
+                                        <InlineText
+                                            text={exception.description}
+                                            branch={branch}
+                                            uidIndex={uidIndex}
+                                            schemaIndex={schemaIndex}
+                                        />
                                     </span>
                                 )}
                             </li>
@@ -119,7 +162,12 @@ export function MemberCard({
             )}
             {member.remarks && (
                 <p className="mt-3 text-sm leading-relaxed text-zinc-500">
-                    <InlineText text={member.remarks} branch={branch} uidIndex={uidIndex} />
+                    <InlineText
+                        text={member.remarks}
+                        branch={branch}
+                        uidIndex={uidIndex}
+                        schemaIndex={schemaIndex}
+                    />
                 </p>
             )}
         </div>

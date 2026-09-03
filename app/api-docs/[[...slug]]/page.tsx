@@ -8,6 +8,12 @@ import {
     findType,
     parseBranchSlug,
 } from "@/lib/api-docs/tree";
+import {
+    buildSchemaProjectIndex,
+    SCHEMA_LINK_GAME,
+    type SchemaProjectIndex,
+} from "@/lib/api-docs/schema-links";
+import { getSchemaDump } from "@/lib/schema/dump";
 import { ApiDocsOverview } from "@/components/api-docs/overview";
 import { TypePage } from "@/components/api-docs/type-page";
 import { PrevNext } from "@/components/api-docs/prev-next";
@@ -52,9 +58,20 @@ export default async function ApiDocsPage({
     const uidIndex = buildUidIndex(dump);
     const flat = buildFlatSequence(dump);
 
+    let schemaIndex: SchemaProjectIndex = new Map();
+    try {
+        schemaIndex = buildSchemaProjectIndex(await getSchemaDump(SCHEMA_LINK_GAME));
+    } catch {}
+
     return (
         <>
-            <TypePage category={found.category} type={found.type} branch={branch} uidIndex={uidIndex} />
+            <TypePage
+                category={found.category}
+                type={found.type}
+                branch={branch}
+                uidIndex={uidIndex}
+                schemaIndex={schemaIndex}
+            />
             <PrevNext branch={branch} flat={flat} categorySlug={categorySlug} typeSlug={typeSlug} />
         </>
     );

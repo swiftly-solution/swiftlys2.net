@@ -1,14 +1,17 @@
 import type { ApiBranch, TypeRefToken } from "@/lib/api-docs/types";
 import { apiDocsPrefix, type UidIndexEntry } from "@/lib/api-docs/tree";
+import { resolveSchemaLink, type SchemaProjectIndex } from "@/lib/api-docs/schema-links";
 
 export function TypeRef({
     tokens,
     branch,
     uidIndex,
+    schemaIndex,
 }: {
     tokens: TypeRefToken[];
     branch: ApiBranch;
     uidIndex: Map<string, UidIndexEntry>;
+    schemaIndex: SchemaProjectIndex;
 }) {
     const prefix = apiDocsPrefix(branch);
 
@@ -26,6 +29,14 @@ export function TypeRef({
                             href={`${prefix}/${entry.categorySlug}/${entry.typeSlug}`}
                             className="text-accent hover:underline"
                         >
+                            {token.text}
+                        </a>
+                    );
+                }
+                const schemaHref = resolveSchemaLink(schemaIndex, token.uid, token.url);
+                if (schemaHref) {
+                    return (
+                        <a key={i} href={schemaHref} className="text-accent hover:underline">
                             {token.text}
                         </a>
                     );

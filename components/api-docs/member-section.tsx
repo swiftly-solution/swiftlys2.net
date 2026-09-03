@@ -1,5 +1,6 @@
 import type { ApiBranch, ApiMember } from "@/lib/api-docs/types";
 import { slugify, type UidIndexEntry } from "@/lib/api-docs/tree";
+import type { SchemaProjectIndex } from "@/lib/api-docs/schema-links";
 import { MemberCard } from "@/components/api-docs/member-card";
 
 export function MemberSection({
@@ -7,11 +8,13 @@ export function MemberSection({
     members,
     branch,
     uidIndex,
+    schemaIndex,
 }: {
     title: string;
     members: ApiMember[] | undefined;
     branch: ApiBranch;
     uidIndex: Map<string, UidIndexEntry>;
+    schemaIndex: SchemaProjectIndex;
 }) {
     if (!members || members.length === 0) return null;
 
@@ -32,6 +35,7 @@ export function MemberSection({
                         member={member}
                         branch={branch}
                         uidIndex={uidIndex}
+                        schemaIndex={schemaIndex}
                         valueLabel={valueLabel}
                     />
                 ))}
