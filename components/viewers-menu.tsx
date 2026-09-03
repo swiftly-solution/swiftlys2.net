@@ -5,9 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 
-const VIEWERS = [
+export const VIEWERS = [
     { label: "schema", href: "/schema-viewer" },
-    { label: "convars", href: "/convars-viewer" },
+    { label: "convars & commands", href: "/convars-viewer" },
     { label: "entity", href: "/entity-viewer" },
     { label: "protobuf", href: "/protobuf-viewer" },
     { label: "events", href: "/gameevents-viewer" },
