@@ -4,10 +4,18 @@ import type {
     ConvarsDump,
     ConvarsKind,
 } from "@/lib/convars/types";
+import { attrKeysOf } from "@/lib/convars/filter";
+
+export type ConvarsModuleIndexItem = {
+    name: string;
+    kind: ConvarsKind;
+    flags: string[];
+    attrs: string[];
+};
 
 export type ConvarsModuleIndexEntry = {
     module: string;
-    items: { name: string; kind: ConvarsKind }[];
+    items: ConvarsModuleIndexItem[];
 };
 
 export function buildConvarsModuleIndex(
@@ -15,17 +23,31 @@ export function buildConvarsModuleIndex(
 ): ConvarsModuleIndexEntry[] {
     const byModule = new Map<string, ConvarsModuleIndexEntry>();
 
-    const add = (module: string, name: string, kind: ConvarsKind) => {
+    const add = (
+        module: string,
+        name: string,
+        kind: ConvarsKind,
+        flags: string[],
+        attrs: string[],
+    ) => {
         let entry = byModule.get(module);
         if (!entry) {
             entry = { module, items: [] };
             byModule.set(module, entry);
         }
-        entry.items.push({ name, kind });
+        entry.items.push({ name, kind, flags, attrs });
     };
 
-    for (const c of dump.convars) add(c.module, c.name, "convar");
-    for (const c of dump.commands) add(c.module, c.name, "concommand");
+    for (const c of dump.convars)
+        add(c.module, c.name, "convar", c.flags ?? [], attrKeysOf(c.attributes));
+    for (const c of dump.commands)
+        add(
+            c.module,
+            c.name,
+            "concommand",
+            c.flags ?? [],
+            attrKeysOf(c.attributes),
+        );
 
     const modules = Array.from(byModule.values());
     for (const m of modules) {

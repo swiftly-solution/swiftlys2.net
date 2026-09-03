@@ -40,6 +40,8 @@ export async function GET(request: NextRequest) {
                                 module: mod.module,
                                 name: item.name,
                                 kind: item.kind,
+                                flags: item.flags,
+                                attrs: item.attrs,
                             })}\n`,
                         ),
                     );

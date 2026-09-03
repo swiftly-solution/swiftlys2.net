@@ -34,6 +34,11 @@ export type ConvarsDump = {
     commands: ConCommand[];
 };
 
+export type ConvarsFacets = {
+    modules: string[];
+    flags: string[];
+};
+
 export type ConvarsKind = "convar" | "concommand";
 
 export type ConvarsEntryResponse =

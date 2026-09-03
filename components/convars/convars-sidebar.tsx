@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { ConvarsModuleIndexEntry } from "@/lib/convars/queries";
+import { countActiveFilters, matchesFilters } from "@/lib/convars/filter";
+import { useConvarsFilters } from "@/components/convars/filter-context";
 
 type Row =
     | { type: "header"; module: string; count: number }
@@ -21,6 +23,8 @@ type StreamMessage =
           module: string;
           name: string;
           kind: "convar" | "concommand";
+          flags: string[];
+          attrs: string[];
       };
 
 type Status = "loading" | "done" | "error";
@@ -34,6 +38,8 @@ export function ConvarsSidebar({ gameId }: { gameId: string }) {
     const [query, setQuery] = useState("");
     const [openModules, setOpenModules] = useState<Set<string>>(new Set());
     const scrollRef = useRef<HTMLDivElement>(null);
+    const { filters } = useConvarsFilters();
+    const filtersActive = countActiveFilters(filters) > 0;
 
     useEffect(() => {
         const order: string[] = [];
@@ -74,7 +80,12 @@ export function ConvarsSidebar({ gameId }: { gameId: string }) {
                             order.push(msg.module);
                         }
                         if (msg.type === "item") {
-                            mod.items.push({ name: msg.name, kind: msg.kind });
+                            mod.items.push({
+                                name: msg.name,
+                                kind: msg.kind,
+                                flags: msg.flags ?? [],
+                                attrs: msg.attrs ?? [],
+                            });
                         }
                     }
 
@@ -103,19 +114,30 @@ export function ConvarsSidebar({ gameId }: { gameId: string }) {
     const normalizedQuery = query.trim().toLowerCase();
 
     const visibleModules = useMemo(() => {
-        if (!normalizedQuery) return modules;
+        if (!normalizedQuery && !filtersActive) return modules;
         return modules
             .map((module) => ({
                 ...module,
-                items: module.items.filter((item) =>
-                    item.name.toLowerCase().includes(normalizedQuery),
+                items: module.items.filter(
+                    (item) =>
+                        (!normalizedQuery ||
+                            item.name.toLowerCase().includes(normalizedQuery)) &&
+                        (!filtersActive ||
+                            matchesFilters(
+                                {
+                                    module: module.module,
+                                    flags: item.flags,
+                                    attrs: item.attrs,
+                                },
+                                filters,
+                            )),
                 ),
             }))
             .filter((module) => module.items.length > 0);
-    }, [modules, normalizedQuery]);
+    }, [modules, normalizedQuery, filtersActive, filters]);
 
     const isOpen = (module: string) =>
-        normalizedQuery.length > 0 || openModules.has(module);
+        normalizedQuery.length > 0 || filtersActive || openModules.has(module);
 
     const toggleModule = (module: string) => {
         setOpenModules((prev) => {
@@ -147,7 +169,7 @@ export function ConvarsSidebar({ gameId }: { gameId: string }) {
         }
         return result;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [visibleModules, openModules, normalizedQuery]);
+    }, [visibleModules, openModules, normalizedQuery, filtersActive]);
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const virtualizer = useVirtualizer({
