@@ -33,6 +33,7 @@ export function GameEventsSidebar({ gameId }: { gameId: string }) {
     const [searchResults, setSearchResults] = useState<GameEventSearchResult[]>(
         [],
     );
+    const [searching, setSearching] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -107,9 +108,11 @@ export function GameEventsSidebar({ gameId }: { gameId: string }) {
     useEffect(() => {
         if (normalizedQuery.length < MIN_SEARCH_QUERY_LENGTH) {
             setSearchResults([]);
+            setSearching(false);
             return;
         }
 
+        setSearching(true);
         let cancelled = false;
         const timer = setTimeout(async () => {
             try {
@@ -121,6 +124,8 @@ export function GameEventsSidebar({ gameId }: { gameId: string }) {
                 if (!cancelled) setSearchResults(data);
             } catch {
                 if (!cancelled) setSearchResults([]);
+            } finally {
+                if (!cancelled) setSearching(false);
             }
         }, SEARCH_DEBOUNCE_MS);
 
@@ -130,7 +135,10 @@ export function GameEventsSidebar({ gameId }: { gameId: string }) {
         };
     }, [gameId, normalizedQuery]);
 
+    const isRemoteSearch = normalizedQuery.length >= MIN_SEARCH_QUERY_LENGTH;
+
     const visibleFiles = useMemo(() => {
+        if (isRemoteSearch) return [];
         if (!normalizedQuery) return files;
         return files
             .map((group) => ({
@@ -140,7 +148,7 @@ export function GameEventsSidebar({ gameId }: { gameId: string }) {
                 ),
             }))
             .filter((group) => group.items.length > 0);
-    }, [files, normalizedQuery]);
+    }, [files, normalizedQuery, isRemoteSearch]);
 
     const isOpen = (file: string) =>
         normalizedQuery.length > 0 || openFiles.has(file);
@@ -210,6 +218,7 @@ export function GameEventsSidebar({ gameId }: { gameId: string }) {
                 )}
 
                 {status === "done" &&
+                    !searching &&
                     rows.length === 0 &&
                     searchResults.length === 0 && (
                         <p className="px-4 py-6 text-center font-mono text-xs text-zinc-600">

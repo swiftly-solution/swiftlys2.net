@@ -45,6 +45,7 @@ export function ProtobufSidebar({ gameId }: { gameId: string }) {
     const [searchResults, setSearchResults] = useState<ProtobufSearchResult[]>(
         [],
     );
+    const [searching, setSearching] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -121,9 +122,11 @@ export function ProtobufSidebar({ gameId }: { gameId: string }) {
     useEffect(() => {
         if (normalizedQuery.length < MIN_SEARCH_QUERY_LENGTH) {
             setSearchResults([]);
+            setSearching(false);
             return;
         }
 
+        setSearching(true);
         let cancelled = false;
         const timer = setTimeout(async () => {
             try {
@@ -135,6 +138,8 @@ export function ProtobufSidebar({ gameId }: { gameId: string }) {
                 if (!cancelled) setSearchResults(data);
             } catch {
                 if (!cancelled) setSearchResults([]);
+            } finally {
+                if (!cancelled) setSearching(false);
             }
         }, SEARCH_DEBOUNCE_MS);
 
@@ -144,7 +149,10 @@ export function ProtobufSidebar({ gameId }: { gameId: string }) {
         };
     }, [gameId, normalizedQuery]);
 
+    const isRemoteSearch = normalizedQuery.length >= MIN_SEARCH_QUERY_LENGTH;
+
     const visibleModules = useMemo(() => {
+        if (isRemoteSearch) return [];
         if (!normalizedQuery) return modules;
         return modules
             .map((mod) => ({
@@ -154,7 +162,7 @@ export function ProtobufSidebar({ gameId }: { gameId: string }) {
                 ),
             }))
             .filter((mod) => mod.items.length > 0);
-    }, [modules, normalizedQuery]);
+    }, [modules, normalizedQuery, isRemoteSearch]);
 
     const isOpen = (module: string) =>
         normalizedQuery.length > 0 || openModules.has(module);
@@ -226,6 +234,7 @@ export function ProtobufSidebar({ gameId }: { gameId: string }) {
                 )}
 
                 {status === "done" &&
+                    !searching &&
                     rows.length === 0 &&
                     searchResults.length === 0 && (
                         <p className="px-4 py-6 text-center font-mono text-xs text-zinc-600">
