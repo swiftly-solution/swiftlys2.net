@@ -36,12 +36,12 @@ export function Toc({ items }: { items: OutlineItem[] }) {
     if (items.length === 0) return null;
 
     return (
-        <nav className="sticky top-20 h-fit">
-            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wide text-zinc-500">
+        <nav className="sticky top-20 flex max-h-[calc(100vh-6rem)] flex-col">
+            <div className="flex shrink-0 items-center gap-2 font-mono text-xs uppercase tracking-wide text-zinc-500">
                 <List className="h-3.5 w-3.5" />
                 On this page
             </div>
-            <div className="mt-3 space-y-1 border-l border-white/10">
+            <div className="mt-3 min-h-0 flex-1 space-y-1 overflow-y-auto border-l border-white/10">
                 {items.map((item) => (
                     <a
                         key={item.id}

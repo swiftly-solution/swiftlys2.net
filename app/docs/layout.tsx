@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { getDocPageSource, getDocsMeta } from "@/lib/docs/dump";
 import { extractFrontmatterTitle } from "@/lib/docs/frontmatter";
 import { DocsSidebar, type DocsNavItem } from "@/components/docs/docs-sidebar";
+import { GridBackdrop } from "@/components/grid-backdrop";
 import type { DocsMeta } from "@/lib/docs/types";
 
 async function buildNavTree(
@@ -44,6 +45,7 @@ export default async function DocsLayout({
 
     return (
         <div className="relative flex-1 px-6 pb-16 pt-12">
+            <GridBackdrop />
             <div className="mx-auto grid max-w-[1350px] gap-8 lg:grid-cols-[260px_1fr]">
                 <DocsSidebar items={navItems} />
                 <div className="min-w-0">{children}</div>

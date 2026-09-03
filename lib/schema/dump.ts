@@ -1,15 +1,9 @@
 import type { SchemaDump } from "@/lib/schema/types";
 import { getDumpUrl, getGame } from "@/lib/schema/games";
-
-const REVALIDATE_MS = 60 * 1000;
-const LATEST_REF = "main";
-
-type CacheEntry = { dump: SchemaDump; fetchedAt: number };
-
-const cache = new Map<string, CacheEntry>();
+import { getCachedGithubDump, LATEST_REF } from "@/lib/github-cache";
 
 async function fetchDump(url: string): Promise<SchemaDump> {
-    const res = await fetch(url);
+    const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
         throw new Error(`Schema dump fetch failed: ${res.status}`);
     }
@@ -29,22 +23,9 @@ export async function getSchemaDump(
         throw new Error(`Unknown game: ${gameId}`);
     }
 
-    const cacheKey = `${gameId}:${ref}`;
-    const cached = cache.get(cacheKey);
-    const isLatest = ref === LATEST_REF;
-    if (
-        cached &&
-        (!isLatest || Date.now() - cached.fetchedAt < REVALIDATE_MS)
-    ) {
-        return cached.dump;
-    }
-
-    try {
-        const dump = await fetchDump(getDumpUrl(game, ref));
-        cache.set(cacheKey, { dump, fetchedAt: Date.now() });
-        return dump;
-    } catch (error) {
-        if (cached) return cached.dump;
-        throw error;
-    }
+    return getCachedGithubDump<SchemaDump>({
+        key: `schema:${gameId}:${ref}`,
+        commit: { owner: game.repoOwner, repo: game.repoName, ref },
+        load: () => fetchDump(getDumpUrl(game, ref)),
+    });
 }

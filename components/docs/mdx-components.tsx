@@ -52,7 +52,16 @@ export const mdxComponents = {
     ),
     pre: (props: ComponentProps<"pre">) => (
         <pre
-            className="my-4 overflow-x-auto rounded-xl border border-white/10 bg-zinc-950 p-4 font-mono text-sm text-zinc-300 [&>code]:bg-transparent [&>code]:p-0 [&>code]:text-zinc-300"
+            className="my-4 overflow-x-auto rounded-xl border border-white/10 bg-zinc-950 p-4 font-mono text-sm text-zinc-300 [&>code]:bg-transparent [&>code]:p-0 [&>code]:text-inherit"
+            {...props}
+        />
+    ),
+    figure: (props: ComponentProps<"figure">) => (
+        <figure className="my-4" {...props} />
+    ),
+    figcaption: (props: ComponentProps<"figcaption">) => (
+        <figcaption
+            className="rounded-t-xl border border-b-0 border-white/10 bg-zinc-900 px-4 py-2 font-mono text-xs text-zinc-400 [&+pre]:mt-0 [&+pre]:rounded-t-none"
             {...props}
         />
     ),

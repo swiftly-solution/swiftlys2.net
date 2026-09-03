@@ -5,6 +5,7 @@
     --foreground: #f4f4f5;
     --accent: #00feed;
     --accent-soft: #11eddd;
+    --code-type: #45d9c9;
 }
 
 @theme inline {
@@ -12,6 +13,7 @@
     --color-foreground: var(--foreground);
     --color-accent: var(--accent);
     --color-accent-soft: var(--accent-soft);
+    --color-code-type: var(--code-type);
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
 }
@@ -19,6 +21,33 @@
 body {
     background: var(--background);
     color: var(--foreground);
+}
+
+html {
+    scrollbar-width: thin;
+    scrollbar-color: #2c3f3c transparent;
+}
+
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #2c3f3c;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #3d5a55;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 @keyframes drift-a {
