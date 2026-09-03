@@ -34,6 +34,8 @@ export type EntityMemberPayload = {
     fieldType: string;
     fieldName: string;
     csharpFieldName: string;
+    schemaClassName: string | null;
+    schemaProject: string | null;
 };
 
 export type ParentClassPayload = {

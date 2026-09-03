@@ -142,9 +142,12 @@ export function EntityDetail({
                                     <div className="shrink-0 font-mono text-xs">
                                         <MemberFieldLink
                                             gameId={gameId}
-                                            className={data.className}
+                                            className={
+                                                member.schemaClassName ??
+                                                data.className
+                                            }
                                             schemaProject={
-                                                data.schemaLink?.project ?? null
+                                                member.schemaProject ?? null
                                             }
                                             fieldName={member.fieldName}
                                             label={
