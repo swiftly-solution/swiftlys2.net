@@ -17,6 +17,7 @@ import {
     cycleTriState,
     EMPTY_FILTERS,
     type FacetKey,
+    type FilterFacet,
     type Filters,
     type KindFilter,
     type TriState,
@@ -27,6 +28,7 @@ type FilterContextValue = {
     filters: Filters;
     activeCount: number;
     cycle: (facet: FacetKey, value: string) => void;
+    setFacetState: (facet: FacetKey, value: string, state: TriState | undefined) => void;
     setKind: (kind: KindFilter) => void;
     reset: () => void;
     openModal: () => void;
@@ -62,6 +64,18 @@ export function ConvarsFilterProvider({
         });
     }, []);
 
+    const setFacetState = useCallback(
+        (facet: FacetKey, value: string, state: TriState | undefined) => {
+            setFilters((prev) => {
+                const nextFacet = { ...prev[facet] };
+                if (state === undefined) delete nextFacet[value];
+                else nextFacet[value] = state;
+                return { ...prev, [facet]: nextFacet };
+            });
+        },
+        [],
+    );
+
     const setKind = useCallback((kind: KindFilter) => {
         setFilters((prev) => ({ ...prev, kind }));
     }, []);
@@ -73,11 +87,12 @@ export function ConvarsFilterProvider({
             filters,
             activeCount: countActiveFilters(filters),
             cycle,
+            setFacetState,
             setKind,
             reset,
             openModal: () => setModalOpen(true),
         }),
-        [filters, cycle, setKind, reset],
+        [filters, cycle, setFacetState, setKind, reset],
     );
 
     return (
@@ -92,22 +107,107 @@ export function ConvarsFilterProvider({
     );
 }
 
+const KIND_PREVIEW_LABEL: Record<KindFilter, string> = {
+    all: "both",
+    convar: "convars",
+    concommand: "concommands",
+};
+
+function activeFacetEntries(
+    facet: FilterFacet,
+    labelOf: (value: string) => string = (v) => v,
+): { value: string; label: string; state: TriState }[] {
+    return Object.entries(facet).map(([value, state]) => ({
+        value,
+        label: labelOf(value),
+        state,
+    }));
+}
+
 export function ConvarsFilterButton() {
-    const { activeCount, openModal } = useConvarsFilters();
+    const { filters, activeCount, openModal } = useConvarsFilters();
+    const [hovered, setHovered] = useState(false);
+
+    const moduleEntries = activeFacetEntries(filters.modules);
+    const flagEntries = activeFacetEntries(filters.flags);
+    const attrEntries = activeFacetEntries(
+        filters.attrs,
+        (v) => ATTR_LABELS[v] ?? v,
+    );
+
     return (
-        <button
-            type="button"
-            onClick={openModal}
-            className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-sm text-zinc-300 transition-colors hover:border-white/20 hover:text-white"
+        <div
+            className="relative"
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
         >
-            <SlidersHorizontal className="h-4 w-4 text-zinc-500" />
-            filters
-            {activeCount > 0 && (
-                <span className="rounded-full bg-accent/15 px-1.5 font-mono text-xs text-accent">
-                    {activeCount}
-                </span>
+            <button
+                type="button"
+                onClick={openModal}
+                className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-sm text-zinc-300 transition-colors hover:border-white/20 hover:text-white"
+            >
+                <SlidersHorizontal className="h-4 w-4 text-zinc-500" />
+                filters
+                {activeCount > 0 && (
+                    <span className="rounded-full bg-accent/15 px-1.5 font-mono text-xs text-accent">
+                        {activeCount}
+                    </span>
+                )}
+            </button>
+
+            {hovered && activeCount > 0 && (
+                <div className="absolute left-0 top-full z-50 mt-2 w-64 space-y-3 rounded-2xl border border-white/10 bg-zinc-950/95 p-4 shadow-2xl backdrop-blur">
+                    {filters.kind !== "all" && (
+                        <PreviewRow
+                            title="type"
+                            items={[
+                                { label: KIND_PREVIEW_LABEL[filters.kind], state: "include" },
+                            ]}
+                        />
+                    )}
+                    {moduleEntries.length > 0 && (
+                        <PreviewRow title="module" items={moduleEntries} />
+                    )}
+                    {flagEntries.length > 0 && (
+                        <PreviewRow title="flags" items={flagEntries} />
+                    )}
+                    {attrEntries.length > 0 && (
+                        <PreviewRow title="attributes" items={attrEntries} />
+                    )}
+                </div>
             )}
-        </button>
+        </div>
+    );
+}
+
+function PreviewRow({
+    title,
+    items,
+}: {
+    title: string;
+    items: { label: string; state: TriState }[];
+}) {
+    return (
+        <div>
+            <div className="font-mono text-[10px] uppercase tracking-wide text-zinc-500">
+                {title}
+            </div>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {items.map((item) => (
+                    <span
+                        key={item.label}
+                        className={`rounded-full border px-2 py-0.5 font-mono text-xs ${
+                            item.state === "include"
+                                ? "border-accent/40 bg-accent/10 text-accent"
+                                : "border-red-500/40 bg-red-500/10 text-red-400"
+                        }`}
+                    >
+                        {item.state === "exclude" ? "− " : ""}
+                        {item.label}
+                    </span>
+                ))}
+            </div>
+        </div>
     );
 }
 

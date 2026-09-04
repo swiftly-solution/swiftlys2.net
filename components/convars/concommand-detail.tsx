@@ -1,5 +1,6 @@
 import { Terminal } from "lucide-react";
 import { SchemaBreadcrumb } from "@/components/schema/breadcrumb";
+import { ConvarsFilterChip } from "@/components/convars/convars-filter-chip";
 import type { ConCommand } from "@/lib/convars/types";
 
 const ATTRIBUTE_LABELS: Record<keyof ConCommand["attributes"], string> = {
@@ -51,12 +52,12 @@ export function ConcommandDetail({
                             </span>
                         )}
                         {data.flags.map((flag) => (
-                            <span
+                            <ConvarsFilterChip
                                 key={flag}
-                                className="rounded-full border border-white/10 px-3 py-1 font-mono text-xs text-zinc-300"
-                            >
-                                {flag}
-                            </span>
+                                facet="flags"
+                                value={flag}
+                                label={flag}
+                            />
                         ))}
                     </div>
                 </div>
@@ -70,18 +71,23 @@ export function ConcommandDetail({
                             Object.keys(ATTRIBUTE_LABELS) as Array<
                                 keyof ConCommand["attributes"]
                             >
-                        ).map((key) => (
-                            <span
-                                key={key}
-                                className={`rounded-full border px-3 py-1 font-mono text-xs ${
-                                    data.attributes[key]
-                                        ? "border-amber-400/30 bg-amber-400/10 text-amber-400"
-                                        : "border-white/10 text-zinc-600"
-                                }`}
-                            >
-                                {ATTRIBUTE_LABELS[key]}
-                            </span>
-                        ))}
+                        ).map((key) =>
+                            data.attributes[key] ? (
+                                <ConvarsFilterChip
+                                    key={key}
+                                    facet="attrs"
+                                    value={key}
+                                    label={ATTRIBUTE_LABELS[key]}
+                                />
+                            ) : (
+                                <span
+                                    key={key}
+                                    className="rounded-full border border-white/10 px-3 py-1 font-mono text-xs text-zinc-600"
+                                >
+                                    {ATTRIBUTE_LABELS[key]}
+                                </span>
+                            ),
+                        )}
                     </div>
                 </div>
             </div>

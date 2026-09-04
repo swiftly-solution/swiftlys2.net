@@ -5,6 +5,7 @@ import { GAMES, getGame } from "@/lib/schema/games";
 import { GameSwitcher } from "@/components/schema/game-switcher";
 import { ConvarsSidebar } from "@/components/convars/convars-sidebar";
 import { ConvarsSearchResults } from "@/components/convars/convars-search-results";
+import { ConvarsSearchFilterSync } from "@/components/convars/convars-search-filter-sync";
 import {
     ConvarsFilterProvider,
     ConvarsFilterButton,
@@ -24,6 +25,7 @@ export default async function ConvarsGameLayout(
     return (
         <ConvarsFilterProvider gameId={gameId}>
             <ViewerSearchProvider>
+                <ConvarsSearchFilterSync />
                 <div className="mt-6 flex flex-wrap items-center gap-3">
                     <GameSwitcher
                         games={GAMES}

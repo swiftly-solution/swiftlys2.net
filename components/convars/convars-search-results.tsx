@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { ConvarSearchResult } from "@/app/api/convars/search/route";
-import { parseSearchQuery, tokenValue } from "@/lib/search/query";
+import { parseSearchQuery } from "@/lib/search/query";
 import { useViewerSearch } from "@/components/search/viewer-search-context";
 
 const MIN_QUERY_LENGTH = 2;
@@ -13,23 +13,10 @@ export function ConvarsSearchResults({ gameId }: { gameId: string }) {
     const { query } = useViewerSearch();
     const [results, setResults] = useState<ConvarSearchResult[]>([]);
 
-    const parsed = useMemo(() => parseSearchQuery(query), [query]);
-    const normalizedQuery = parsed.freeText.trim().toLowerCase();
-    const moduleToken = tokenValue(parsed.tokens, "module");
-    const rawKindToken = tokenValue(parsed.tokens, "kind");
-    const kindToken =
-        rawKindToken === "convar" || rawKindToken === "concommand"
-            ? rawKindToken
-            : undefined;
-    const flagToken = tokenValue(parsed.tokens, "flag");
-    const attrToken = tokenValue(parsed.tokens, "attr");
-
-    const hasSearch =
-        normalizedQuery.length >= MIN_QUERY_LENGTH ||
-        Boolean(moduleToken || kindToken || flagToken || attrToken);
+    const normalizedQuery = parseSearchQuery(query).freeText.trim().toLowerCase();
 
     useEffect(() => {
-        if (!hasSearch) {
+        if (normalizedQuery.length < MIN_QUERY_LENGTH) {
             setResults([]);
             return;
         }
@@ -37,15 +24,8 @@ export function ConvarsSearchResults({ gameId }: { gameId: string }) {
         let cancelled = false;
         const timer = setTimeout(async () => {
             try {
-                const params = new URLSearchParams({ game: gameId });
-                if (normalizedQuery) params.set("q", normalizedQuery);
-                if (moduleToken) params.set("module", moduleToken);
-                if (kindToken) params.set("kind", kindToken);
-                if (flagToken) params.set("flag", flagToken);
-                if (attrToken) params.set("attr", attrToken);
-
                 const res = await fetch(
-                    `/api/convars/search?${params.toString()}`,
+                    `/api/convars/search?game=${gameId}&q=${encodeURIComponent(normalizedQuery)}`,
                 );
                 if (!res.ok) return;
                 const data = (await res.json()) as ConvarSearchResult[];
@@ -59,15 +39,7 @@ export function ConvarsSearchResults({ gameId }: { gameId: string }) {
             cancelled = true;
             clearTimeout(timer);
         };
-    }, [
-        gameId,
-        hasSearch,
-        normalizedQuery,
-        moduleToken,
-        kindToken,
-        flagToken,
-        attrToken,
-    ]);
+    }, [gameId, normalizedQuery]);
 
     if (results.length === 0) return null;
 

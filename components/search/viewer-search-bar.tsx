@@ -53,6 +53,12 @@ export function ViewerSearchBar({
     const [globalError, setGlobalError] = useState(false);
 
     useEffect(() => {
+        if (new URLSearchParams(window.location.search).get("q")) {
+            setOpen(true);
+        }
+    }, []);
+
+    useEffect(() => {
         if (!isGlobal || globalText.length < MIN_GLOBAL_QUERY_LENGTH) {
             setGlobalResults(null);
             setGlobalLoading(false);
