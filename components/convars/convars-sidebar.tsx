@@ -125,6 +125,7 @@ export function ConvarsSidebar({ gameId }: { gameId: string }) {
                         (!filtersActive ||
                             matchesFilters(
                                 {
+                                    kind: item.kind,
                                     module: module.module,
                                     flags: item.flags,
                                     attrs: item.attrs,

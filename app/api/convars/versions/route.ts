@@ -10,7 +10,9 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const versions = await getVersions(game, game.convarsPath);
+        const versions = await getVersions(game, game.convarsPath, {
+            since: game.convarsVersionsSince,
+        });
         return NextResponse.json(versions);
     } catch {
         return NextResponse.json({ error: "unavailable" }, { status: 503 });

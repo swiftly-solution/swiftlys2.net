@@ -18,6 +18,7 @@ import {
     EMPTY_FILTERS,
     type FacetKey,
     type Filters,
+    type KindFilter,
     type TriState,
 } from "@/lib/convars/filter";
 import type { ConvarsFacets } from "@/lib/convars/types";
@@ -26,6 +27,7 @@ type FilterContextValue = {
     filters: Filters;
     activeCount: number;
     cycle: (facet: FacetKey, value: string) => void;
+    setKind: (kind: KindFilter) => void;
     reset: () => void;
     openModal: () => void;
 };
@@ -60,6 +62,10 @@ export function ConvarsFilterProvider({
         });
     }, []);
 
+    const setKind = useCallback((kind: KindFilter) => {
+        setFilters((prev) => ({ ...prev, kind }));
+    }, []);
+
     const reset = useCallback(() => setFilters(EMPTY_FILTERS), []);
 
     const value = useMemo<FilterContextValue>(
@@ -67,10 +73,11 @@ export function ConvarsFilterProvider({
             filters,
             activeCount: countActiveFilters(filters),
             cycle,
+            setKind,
             reset,
             openModal: () => setModalOpen(true),
         }),
-        [filters, cycle, reset],
+        [filters, cycle, setKind, reset],
     );
 
     return (
@@ -169,6 +176,44 @@ function Section({
     );
 }
 
+const KIND_OPTIONS: { value: KindFilter; label: string }[] = [
+    { value: "all", label: "both" },
+    { value: "convar", label: "convars" },
+    { value: "concommand", label: "concommands" },
+];
+
+function KindSection() {
+    const { filters, setKind } = useConvarsFilters();
+    return (
+        <div className="mt-5 first:mt-0">
+            <div className="flex items-baseline justify-between gap-3">
+                <h3 className="font-mono text-sm font-semibold text-white">type</h3>
+                <span className="font-mono text-[10px] text-zinc-600">select one</span>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+                {KIND_OPTIONS.map((opt) => {
+                    const active = filters.kind === opt.value;
+                    return (
+                        <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => setKind(opt.value)}
+                            aria-pressed={active}
+                            className={`rounded-full border px-3 py-1 font-mono text-xs transition-colors ${
+                                active
+                                    ? "border-accent/50 bg-accent/10 text-accent"
+                                    : "border-white/10 text-zinc-400 hover:border-white/25 hover:text-zinc-200"
+                            }`}
+                        >
+                            {opt.label}
+                        </button>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
 function FilterModal({
     gameId,
     open,
@@ -246,6 +291,8 @@ function FilterModal({
                         <X className="h-5 w-5" />
                     </button>
                 </div>
+
+                <KindSection />
 
                 <Section
                     title="module"

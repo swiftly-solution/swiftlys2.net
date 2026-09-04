@@ -1,14 +1,16 @@
 export type TriState = "include" | "exclude";
 export type FilterFacet = Record<string, TriState>;
 export type FacetKey = "modules" | "flags" | "attrs";
+export type KindFilter = "all" | "convar" | "concommand";
 
 export type Filters = {
+    kind: KindFilter;
     modules: FilterFacet;
     flags: FilterFacet;
     attrs: FilterFacet;
 };
 
-export const EMPTY_FILTERS: Filters = { modules: {}, flags: {}, attrs: {} };
+export const EMPTY_FILTERS: Filters = { kind: "all", modules: {}, flags: {}, attrs: {} };
 
 export const ATTR_KEYS = [
     "has_callback",
@@ -27,6 +29,7 @@ export const ATTR_LABELS: Record<string, string> = {
 };
 
 export type FilterableItem = {
+    kind: "convar" | "concommand";
     module: string;
     flags: string[];
     attrs: string[];
@@ -49,6 +52,8 @@ function partition(facet: FilterFacet): { include: string[]; exclude: string[] }
 }
 
 export function matchesFilters(item: FilterableItem, filters: Filters): boolean {
+    if (filters.kind !== "all" && item.kind !== filters.kind) return false;
+
     const mod = partition(filters.modules);
     if (mod.include.length > 0 && !mod.include.includes(item.module)) return false;
     if (mod.exclude.includes(item.module)) return false;
@@ -66,6 +71,7 @@ export function matchesFilters(item: FilterableItem, filters: Filters): boolean 
 
 export function countActiveFilters(filters: Filters): number {
     return (
+        (filters.kind !== "all" ? 1 : 0) +
         Object.keys(filters.modules).length +
         Object.keys(filters.flags).length +
         Object.keys(filters.attrs).length

@@ -6,6 +6,7 @@ export type Game = {
     repoName: string;
     dumpPath: string;
     convarsPath: string;
+    convarsVersionsSince?: string;
     commandsPath: string;
     entitiesPath: string;
     datamapsPath: string;
@@ -22,6 +23,7 @@ export const GAMES: Game[] = [
         repoName: "CS2-Dumps",
         dumpPath: "dump/sdk.json",
         convarsPath: "dump/convars.json",
+        convarsVersionsSince: "4a18dfa0e582bd997f2976fb979d1cfeb61956d4",
         commandsPath: "dump/commands.json",
         entitiesPath: "dump/entities.json",
         datamapsPath: "dump/datamaps.json",

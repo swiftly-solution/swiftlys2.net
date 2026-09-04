@@ -8,6 +8,7 @@ export type FieldSearchResult = {
     project: string;
     className: string;
     fieldName: string;
+    fieldType: string;
 };
 
 export async function GET(request: NextRequest) {
@@ -31,11 +32,15 @@ export async function GET(request: NextRequest) {
     const results: FieldSearchResult[] = [];
     for (const c of dump.classes) {
         for (const field of c.fields ?? []) {
-            if (field.name.toLowerCase().includes(q)) {
+            if (
+                field.name.toLowerCase().includes(q) ||
+                field.type.toLowerCase().includes(q)
+            ) {
                 results.push({
                     project: c.project,
                     className: c.name,
                     fieldName: field.name,
+                    fieldType: field.type,
                 });
             }
         }

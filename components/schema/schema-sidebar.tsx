@@ -293,6 +293,7 @@ export function SchemaSidebar({ gameId }: { gameId: string }) {
                                     {match.className}
                                     <span className="text-zinc-600">.</span>
                                     {match.fieldName}
+                                    <span className="text-zinc-600"> : {match.fieldType}</span>
                                 </span>
                             </Link>
                         ))}
