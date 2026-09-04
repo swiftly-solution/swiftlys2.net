@@ -1,39 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { EntityFieldSearchResult } from "@/app/api/entities/search/route";
 
 type StreamMessage = { name: string };
 type Status = "loading" | "done" | "error";
 
 const ITEM_ROW_HEIGHT = 30;
-const MIN_FIELD_QUERY_LENGTH = 2;
-const FIELD_SEARCH_DEBOUNCE_MS = 250;
-
-const KIND_LABEL: Record<EntityFieldSearchResult["kind"], string> = {
-    input: "I",
-    output: "O",
-    member: "M",
-};
-
-const KIND_ANCHOR: Record<
-    EntityFieldSearchResult["kind"],
-    (match: EntityFieldSearchResult) => string
-> = {
-    input: (m) => `input-${m.externalName}`,
-    output: (m) => `output-${m.externalName}`,
-    member: (m) => `member-${m.fieldName}`,
-};
 
 export function EntitiesSidebar({ gameId }: { gameId: string }) {
     const [names, setNames] = useState<string[]>([]);
     const [status, setStatus] = useState<Status>("loading");
-    const [query, setQuery] = useState("");
-    const [fieldMatches, setFieldMatches] = useState<EntityFieldSearchResult[]>(
-        [],
-    );
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -84,44 +62,9 @@ export function EntitiesSidebar({ gameId }: { gameId: string }) {
         };
     }, [gameId]);
 
-    const normalizedQuery = query.trim().toLowerCase();
-
-    useEffect(() => {
-        if (normalizedQuery.length < MIN_FIELD_QUERY_LENGTH) {
-            setFieldMatches([]);
-            return;
-        }
-
-        let cancelled = false;
-        const timer = setTimeout(async () => {
-            try {
-                const res = await fetch(
-                    `/api/entities/search?game=${gameId}&q=${encodeURIComponent(normalizedQuery)}`,
-                );
-                if (!res.ok) return;
-                const data = (await res.json()) as EntityFieldSearchResult[];
-                if (!cancelled) setFieldMatches(data);
-            } catch {
-                if (!cancelled) setFieldMatches([]);
-            }
-        }, FIELD_SEARCH_DEBOUNCE_MS);
-
-        return () => {
-            cancelled = true;
-            clearTimeout(timer);
-        };
-    }, [gameId, normalizedQuery]);
-
-    const rows = useMemo(() => {
-        if (!normalizedQuery) return names;
-        return names.filter((name) =>
-            name.toLowerCase().includes(normalizedQuery),
-        );
-    }, [names, normalizedQuery]);
-
     // eslint-disable-next-line react-hooks/incompatible-library
     const virtualizer = useVirtualizer({
-        count: rows.length,
+        count: names.length,
         getScrollElement: () => scrollRef.current,
         estimateSize: () => ITEM_ROW_HEIGHT,
         overscan: 12,
@@ -129,18 +72,6 @@ export function EntitiesSidebar({ gameId }: { gameId: string }) {
 
     return (
         <div className="sticky top-20 rounded-2xl border border-white/10 bg-zinc-950/40">
-            <div className="border-b border-white/10 p-3">
-                <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-sm">
-                    <span className="text-zinc-600">$</span>
-                    <input
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="grep entity, input, output or member"
-                        className="w-full bg-transparent text-white placeholder:text-zinc-600 focus:outline-none"
-                    />
-                </div>
-            </div>
-
             <div
                 ref={scrollRef}
                 className="max-h-[calc(100vh-11rem)] overflow-y-auto"
@@ -151,15 +82,13 @@ export function EntitiesSidebar({ gameId }: { gameId: string }) {
                     </p>
                 )}
 
-                {status === "done" &&
-                    rows.length === 0 &&
-                    fieldMatches.length === 0 && (
-                        <p className="px-4 py-6 text-center font-mono text-xs text-zinc-600">
-                            No matches.
-                        </p>
-                    )}
+                {status === "done" && names.length === 0 && (
+                    <p className="px-4 py-6 text-center font-mono text-xs text-zinc-600">
+                        No matches.
+                    </p>
+                )}
 
-                {rows.length > 0 && (
+                {names.length > 0 && (
                     <div
                         style={{
                             height: virtualizer.getTotalSize(),
@@ -167,7 +96,7 @@ export function EntitiesSidebar({ gameId }: { gameId: string }) {
                         }}
                     >
                         {virtualizer.getVirtualItems().map((virtualRow) => {
-                            const name = rows[virtualRow.index];
+                            const name = names[virtualRow.index];
                             const style = {
                                 position: "absolute" as const,
                                 top: 0,
@@ -188,30 +117,6 @@ export function EntitiesSidebar({ gameId }: { gameId: string }) {
                                 </Link>
                             );
                         })}
-                    </div>
-                )}
-
-                {fieldMatches.length > 0 && (
-                    <div className="border-t border-white/5">
-                        <div className="px-4 py-2 font-mono text-xs uppercase tracking-wide text-zinc-500">
-                            Inputs / Outputs / Members ({fieldMatches.length})
-                        </div>
-                        {fieldMatches.map((match) => (
-                            <Link
-                                key={`${match.className}/${match.kind}/${match.fieldName}`}
-                                href={`/entity-viewer/${gameId}/${encodeURIComponent(match.className)}#${KIND_ANCHOR[match.kind](match)}`}
-                                className="flex items-center gap-2 px-4 py-1.5 font-mono text-xs text-zinc-400 transition-colors hover:bg-white/[0.03] hover:text-accent"
-                            >
-                                <span className="text-zinc-600">
-                                    {KIND_LABEL[match.kind]}
-                                </span>
-                                <span className="truncate">
-                                    {match.className}
-                                    <span className="text-zinc-600">.</span>
-                                    {match.externalName}
-                                </span>
-                            </Link>
-                        ))}
                     </div>
                 )}
             </div>

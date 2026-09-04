@@ -4,8 +4,11 @@ import { History } from "lucide-react";
 import { GAMES, getGame } from "@/lib/schema/games";
 import { GameSwitcher } from "@/components/schema/game-switcher";
 import { GameEventsSidebar } from "@/components/gameevents/gameevents-sidebar";
+import { GameEventsSearchResults } from "@/components/gameevents/gameevents-search-results";
 import { GameEventsLanguageProvider } from "@/components/gameevents/language-context";
 import { GameEventsLanguageSwitcher } from "@/components/gameevents/language-switcher";
+import { ViewerSearchProvider } from "@/components/search/viewer-search-context";
+import { ViewerSearchBar } from "@/components/search/viewer-search-bar";
 
 export default async function GameEventsGameLayout(
     props: LayoutProps<"/gameevents-viewer/[game]">,
@@ -18,23 +21,31 @@ export default async function GameEventsGameLayout(
 
     return (
         <GameEventsLanguageProvider>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-                <GameSwitcher games={GAMES} current={game} />
-                <GameEventsLanguageSwitcher />
-                <Link
-                    href={`/gameevents-viewer/${gameId}/versions`}
-                    className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-sm text-zinc-300 transition-colors hover:border-white/20 hover:text-white"
-                >
-                    <History className="h-4 w-4 text-zinc-500" />
-                    versions
-                </Link>
-            </div>
+            <ViewerSearchProvider>
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                    <GameSwitcher games={GAMES} current={game} />
+                    <GameEventsLanguageSwitcher />
+                    <Link
+                        href={`/gameevents-viewer/${gameId}/versions`}
+                        className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-sm text-zinc-300 transition-colors hover:border-white/20 hover:text-white"
+                    >
+                        <History className="h-4 w-4 text-zinc-500" />
+                        versions
+                    </Link>
+                    <ViewerSearchBar
+                        viewerId="gameevents"
+                        gameId={gameId}
+                        placeholder="grep event, field or hash"
+                        resultsSlot={<GameEventsSearchResults gameId={gameId} />}
+                    />
+                </div>
 
-            <div className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
-                <GameEventsSidebar gameId={gameId} />
+                <div className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
+                    <GameEventsSidebar gameId={gameId} />
 
-                <div className="min-w-0">{props.children}</div>
-            </div>
+                    <div className="min-w-0">{props.children}</div>
+                </div>
+            </ViewerSearchProvider>
         </GameEventsLanguageProvider>
     );
 }

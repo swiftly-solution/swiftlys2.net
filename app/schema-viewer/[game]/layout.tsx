@@ -6,6 +6,9 @@ import { GameSwitcher } from "@/components/schema/game-switcher";
 import { LanguageProvider } from "@/components/schema/language-context";
 import { LanguageSwitcher } from "@/components/schema/language-switcher";
 import { SchemaSidebar } from "@/components/schema/schema-sidebar";
+import { SchemaSearchResults } from "@/components/schema/schema-search-results";
+import { ViewerSearchProvider } from "@/components/search/viewer-search-context";
+import { ViewerSearchBar } from "@/components/search/viewer-search-bar";
 
 export default async function SchemaGameLayout(
     props: LayoutProps<"/schema-viewer/[game]">,
@@ -18,23 +21,31 @@ export default async function SchemaGameLayout(
 
     return (
         <LanguageProvider>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-                <GameSwitcher games={GAMES} current={game} />
-                <LanguageSwitcher />
-                <Link
-                    href={`/schema-viewer/${gameId}/versions`}
-                    className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-sm text-zinc-300 transition-colors hover:border-white/20 hover:text-white"
-                >
-                    <History className="h-4 w-4 text-zinc-500" />
-                    versions
-                </Link>
-            </div>
+            <ViewerSearchProvider>
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                    <GameSwitcher games={GAMES} current={game} />
+                    <LanguageSwitcher />
+                    <Link
+                        href={`/schema-viewer/${gameId}/versions`}
+                        className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 font-mono text-sm text-zinc-300 transition-colors hover:border-white/20 hover:text-white"
+                    >
+                        <History className="h-4 w-4 text-zinc-500" />
+                        versions
+                    </Link>
+                    <ViewerSearchBar
+                        viewerId="schema"
+                        gameId={gameId}
+                        placeholder="grep classname or field"
+                        resultsSlot={<SchemaSearchResults gameId={gameId} />}
+                    />
+                </div>
 
-            <div className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
-                <SchemaSidebar gameId={gameId} />
+                <div className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
+                    <SchemaSidebar gameId={gameId} />
 
-                <div className="min-w-0">{props.children}</div>
-            </div>
+                    <div className="min-w-0">{props.children}</div>
+                </div>
+            </ViewerSearchProvider>
         </LanguageProvider>
     );
 }

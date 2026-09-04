@@ -35,7 +35,6 @@ const ITEM_ROW_HEIGHT = 30;
 export function ConvarsSidebar({ gameId }: { gameId: string }) {
     const [modules, setModules] = useState<ConvarsModuleIndexEntry[]>([]);
     const [status, setStatus] = useState<Status>("loading");
-    const [query, setQuery] = useState("");
     const [openModules, setOpenModules] = useState<Set<string>>(new Set());
     const scrollRef = useRef<HTMLDivElement>(null);
     const { filters } = useConvarsFilters();
@@ -111,34 +110,28 @@ export function ConvarsSidebar({ gameId }: { gameId: string }) {
         };
     }, [gameId]);
 
-    const normalizedQuery = query.trim().toLowerCase();
-
     const visibleModules = useMemo(() => {
-        if (!normalizedQuery && !filtersActive) return modules;
+        if (!filtersActive) return modules;
         return modules
             .map((module) => ({
                 ...module,
-                items: module.items.filter(
-                    (item) =>
-                        (!normalizedQuery ||
-                            item.name.toLowerCase().includes(normalizedQuery)) &&
-                        (!filtersActive ||
-                            matchesFilters(
-                                {
-                                    kind: item.kind,
-                                    module: module.module,
-                                    flags: item.flags,
-                                    attrs: item.attrs,
-                                },
-                                filters,
-                            )),
+                items: module.items.filter((item) =>
+                    matchesFilters(
+                        {
+                            kind: item.kind,
+                            module: module.module,
+                            flags: item.flags,
+                            attrs: item.attrs,
+                        },
+                        filters,
+                    ),
                 ),
             }))
             .filter((module) => module.items.length > 0);
-    }, [modules, normalizedQuery, filtersActive, filters]);
+    }, [modules, filtersActive, filters]);
 
     const isOpen = (module: string) =>
-        normalizedQuery.length > 0 || filtersActive || openModules.has(module);
+        filtersActive || openModules.has(module);
 
     const toggleModule = (module: string) => {
         setOpenModules((prev) => {
@@ -170,7 +163,7 @@ export function ConvarsSidebar({ gameId }: { gameId: string }) {
         }
         return result;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [visibleModules, openModules, normalizedQuery, filtersActive]);
+    }, [visibleModules, openModules, filtersActive]);
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const virtualizer = useVirtualizer({
@@ -183,18 +176,6 @@ export function ConvarsSidebar({ gameId }: { gameId: string }) {
 
     return (
         <div className="sticky top-20 rounded-2xl border border-white/10 bg-zinc-950/40">
-            <div className="border-b border-white/10 p-3">
-                <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/40 px-3 py-2 font-mono text-sm">
-                    <span className="text-zinc-600">$</span>
-                    <input
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="grep convar"
-                        className="w-full bg-transparent text-white placeholder:text-zinc-600 focus:outline-none"
-                    />
-                </div>
-            </div>
-
             <div
                 ref={scrollRef}
                 className="max-h-[calc(100vh-11rem)] overflow-y-auto"

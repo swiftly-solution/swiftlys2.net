@@ -16,6 +16,25 @@ export function flattenDocsMeta(meta: DocsMeta, prefix = ""): DocsPageRef[] {
     return result;
 }
 
+export type DocsSearchEntry = { slug: string; title: string };
+
+export function flattenDocsMetaWithTitles(
+    meta: DocsMeta,
+    prefix = "",
+): DocsSearchEntry[] {
+    const result: DocsSearchEntry[] = [];
+    for (const [key, entry] of Object.entries(meta)) {
+        const slug = prefix ? `${prefix}/${key}` : key;
+        if (entry.page) {
+            result.push({ slug, title: entry.title ?? key });
+        }
+        if (entry.children) {
+            result.push(...flattenDocsMetaWithTitles(entry.children, slug));
+        }
+    }
+    return result;
+}
+
 export function findDocPage(
     meta: DocsMeta,
     slugParts: string[],
