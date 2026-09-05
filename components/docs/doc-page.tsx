@@ -4,6 +4,7 @@ import rehypeSlug from "rehype-slug";
 import rehypePrettyCode, {
     type Options as PrettyCodeOptions,
 } from "rehype-pretty-code";
+import remarkGfm from "remark-gfm";
 import { getDocPageSource, getDocsMeta } from "@/lib/docs/dump";
 import { findDocPage } from "@/lib/docs/tree";
 import { extractOutline } from "@/lib/docs/outline";
@@ -50,6 +51,7 @@ export async function DocPage({ slugParts }: { slugParts: string[] }) {
         options: {
             parseFrontmatter: true,
             mdxOptions: {
+                remarkPlugins: [remarkGfm],
                 rehypePlugins: [
                     rehypeSlug,
                     [rehypePrettyCode, prettyCodeOptions],

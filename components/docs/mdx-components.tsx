@@ -2,11 +2,19 @@ import type { ComponentProps } from "react";
 import { Callout } from "@/components/docs/callout";
 import { Box } from "@/components/docs/box";
 import { Download } from "@/components/docs/download";
+import { Tabs, Tab } from "@/components/docs/tabs";
+import { Steps, Step } from "@/components/docs/steps";
+import { ColorPicker } from "@/components/docs/color-picker";
 
 export const mdxComponents = {
     Callout,
     Box,
     Download,
+    Tabs,
+    Tab,
+    Steps,
+    Step,
+    ColorPicker,
     h1: (props: ComponentProps<"h1">) => (
         <h1
             className="mb-4 mt-8 font-mono text-3xl font-bold text-white first:mt-0"
@@ -69,4 +77,25 @@ export const mdxComponents = {
         <strong className="font-semibold text-white" {...props} />
     ),
     hr: () => <hr className="my-8 border-white/10" />,
+    table: (props: ComponentProps<"table">) => (
+        <div className="my-4 overflow-x-auto rounded-xl border border-white/10">
+            <table className="w-full border-collapse text-left text-sm" {...props} />
+        </div>
+    ),
+    thead: (props: ComponentProps<"thead">) => (
+        <thead className="bg-white/5" {...props} />
+    ),
+    tbody: (props: ComponentProps<"tbody">) => (
+        <tbody className="divide-y divide-white/10" {...props} />
+    ),
+    tr: (props: ComponentProps<"tr">) => <tr {...props} />,
+    th: (props: ComponentProps<"th">) => (
+        <th
+            className="whitespace-nowrap px-4 py-2 font-mono text-xs uppercase tracking-wide text-zinc-400"
+            {...props}
+        />
+    ),
+    td: (props: ComponentProps<"td">) => (
+        <td className="px-4 py-2 text-zinc-300" {...props} />
+    ),
 };
