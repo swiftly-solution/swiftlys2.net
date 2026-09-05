@@ -5,6 +5,7 @@ import { Download } from "@/components/docs/download";
 import { Tabs, Tab } from "@/components/docs/tabs";
 import { Steps, Step } from "@/components/docs/steps";
 import { ColorPicker } from "@/components/docs/color-picker";
+import { Heading } from "@/components/docs/heading";
 
 export const mdxComponents = {
     Callout,
@@ -15,24 +16,10 @@ export const mdxComponents = {
     Steps,
     Step,
     ColorPicker,
-    h1: (props: ComponentProps<"h1">) => (
-        <h1
-            className="mb-4 mt-8 font-mono text-3xl font-bold text-white first:mt-0"
-            {...props}
-        />
-    ),
-    h2: (props: ComponentProps<"h2">) => (
-        <h2
-            className="mb-3 mt-8 font-mono text-2xl font-bold text-white"
-            {...props}
-        />
-    ),
-    h3: (props: ComponentProps<"h3">) => (
-        <h3
-            className="mb-2 mt-6 font-mono text-lg font-semibold text-white"
-            {...props}
-        />
-    ),
+    h1: (props: ComponentProps<"h1">) => <Heading as="h1" {...props} />,
+    h2: (props: ComponentProps<"h2">) => <Heading as="h2" {...props} />,
+    h3: (props: ComponentProps<"h3">) => <Heading as="h3" {...props} />,
+    h4: (props: ComponentProps<"h4">) => <Heading as="h4" {...props} />,
     p: (props: ComponentProps<"p">) => (
         <p className="my-3 leading-relaxed text-zinc-400" {...props} />
     ),
