@@ -24,6 +24,7 @@ body {
 }
 
 html {
+    font-size: 15px;
     scrollbar-width: thin;
     scrollbar-color: #2c3f3c transparent;
 }
