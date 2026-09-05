@@ -6,6 +6,14 @@ import { Tabs, Tab } from "@/components/docs/tabs";
 import { Steps, Step } from "@/components/docs/steps";
 import { ColorPicker } from "@/components/docs/color-picker";
 import { Heading } from "@/components/docs/heading";
+import {
+    ApiRef,
+    ConvarRef,
+    EntityRef,
+    GameEventRef,
+    ProtobufRef,
+    SchemaRef,
+} from "@/components/docs/refs";
 
 export const mdxComponents = {
     Callout,
@@ -16,6 +24,12 @@ export const mdxComponents = {
     Steps,
     Step,
     ColorPicker,
+    SchemaRef,
+    EntityRef,
+    ProtobufRef,
+    GameEventRef,
+    ConvarRef,
+    ApiRef,
     h1: (props: ComponentProps<"h1">) => <Heading as="h1" {...props} />,
     h2: (props: ComponentProps<"h2">) => <Heading as="h2" {...props} />,
     h3: (props: ComponentProps<"h3">) => <Heading as="h3" {...props} />,
