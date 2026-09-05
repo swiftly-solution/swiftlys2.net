@@ -78,20 +78,22 @@ export const mdxComponents = {
     ),
     hr: () => <hr className="my-8 border-white/10" />,
     table: (props: ComponentProps<"table">) => (
-        <div className="my-4 overflow-x-auto rounded-xl border border-white/10">
-            <table className="w-full border-collapse text-left text-sm" {...props} />
+        <div className="my-4 overflow-x-auto rounded-xl border border-white/10 bg-zinc-950 font-mono text-sm">
+            <table className="w-full border-collapse text-left" {...props} />
         </div>
     ),
     thead: (props: ComponentProps<"thead">) => (
-        <thead className="bg-white/5" {...props} />
+        <thead className="border-b border-white/10" {...props} />
     ),
     tbody: (props: ComponentProps<"tbody">) => (
-        <tbody className="divide-y divide-white/10" {...props} />
+        <tbody className="divide-y divide-white/5" {...props} />
     ),
-    tr: (props: ComponentProps<"tr">) => <tr {...props} />,
+    tr: (props: ComponentProps<"tr">) => (
+        <tr className="transition-colors hover:bg-white/[0.03]" {...props} />
+    ),
     th: (props: ComponentProps<"th">) => (
         <th
-            className="whitespace-nowrap px-4 py-2 font-mono text-xs uppercase tracking-wide text-zinc-400"
+            className="whitespace-nowrap px-4 py-2 text-xs uppercase tracking-wide text-zinc-500"
             {...props}
         />
     ),
