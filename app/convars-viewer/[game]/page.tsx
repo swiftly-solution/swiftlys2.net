@@ -10,7 +10,7 @@ export default function ConvarsGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     What are ConVars and ConCommands?
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     ConVars are console variables - persistent, typed settings
                     with an optional default, min, and max. ConCommands are
                     console commands - callbacks the engine or a module
@@ -23,7 +23,7 @@ export default function ConvarsGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     What can you find here?
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Look up any convar or concommand by name, see its module,
                     description, flags, and default/min/max where applicable.
                     The data is dumped offline from game files and updated as
@@ -42,7 +42,7 @@ export default function ConvarsGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     How SwiftlyS2 uses this
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     This is the same kind of data{" "}
                     <Link
                         href={REPO_URL}
@@ -65,7 +65,7 @@ export default function ConvarsGameIndexPage() {
 
             <div className={CARD_CLASS}>
                 <h2 className="font-semibold text-white">Search tips</h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Type any text in the sidebar search to filter names -
                     matching modules expand automatically. Clear the search to
                     browse module by module instead.{" "}

@@ -10,7 +10,7 @@ export default function EntityGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     What is entity data?
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Every spawnable Source 2 entity class has a data
                     description: its Hammer inputs, outputs, and keyvalue
                     members, plus its registered think functions. This is what
@@ -23,7 +23,7 @@ export default function EntityGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     What can you find here?
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Look up any class with a data description. Members show
                     their keyvalue name and type, and link straight to the
                     backing schema field. Inputs show their handler signature,
@@ -36,7 +36,7 @@ export default function EntityGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     Members &amp; CEntityKeyValues
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Members are what{" "}
                     <code className="text-zinc-400">CEntityKeyValues</code> uses
                     to set schema fields by name - the same lookup Hammer entity
@@ -54,7 +54,7 @@ export default function EntityGameIndexPage() {
 
             <div className={CARD_CLASS}>
                 <h2 className="font-semibold text-white">Search tips</h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Type any text in the sidebar search to filter class names.
                     Not every class here is a spawnable entity - some are plain
                     structs with their own data description, such as embedded

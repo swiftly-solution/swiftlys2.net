@@ -10,7 +10,7 @@ export default function GameEventsGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     What are game events?
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Game events are Source 2&apos;s KeyValues-defined broadcast
                     messages - things like{" "}
                     <code className="text-zinc-400">player_death</code> or{" "}
@@ -27,7 +27,7 @@ export default function GameEventsGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     What can you find here?
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Look up any event by name and see its fields, the native
                     type each was declared with, and which files declare or
                     extend it - a later file can add fields to an event a prior
@@ -47,7 +47,7 @@ export default function GameEventsGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     How SwiftlyS2 uses this
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     This is the same data{" "}
                     <Link
                         href={REPO_URL}
@@ -63,7 +63,7 @@ export default function GameEventsGameIndexPage() {
 
             <div className={CARD_CLASS}>
                 <h2 className="font-semibold text-white">Search tips</h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Type any text in the sidebar search to filter event and
                     field names, or paste a hash (with or without the{" "}
                     <code className="text-zinc-400">0x</code> prefix) to find

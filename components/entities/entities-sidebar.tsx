@@ -77,13 +77,13 @@ export function EntitiesSidebar({ gameId }: { gameId: string }) {
                 className="max-h-[calc(100vh-11rem)] overflow-y-auto"
             >
                 {status === "error" && (
-                    <p className="px-4 py-6 text-center font-mono text-xs text-zinc-600">
+                    <p className="px-4 py-6 text-center font-mono text-xs text-zinc-400">
                         Entity data is temporarily unavailable.
                     </p>
                 )}
 
                 {status === "done" && names.length === 0 && (
-                    <p className="px-4 py-6 text-center font-mono text-xs text-zinc-600">
+                    <p className="px-4 py-6 text-center font-mono text-xs text-zinc-400">
                         No matches.
                     </p>
                 )}

@@ -10,7 +10,7 @@ export default function SchemaGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     What is the Source 2 schema system?
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Source 2&apos;s schema system is the engine&apos;s runtime
                     reflection layer: every class, field, enum, offset, and
                     inheritance chain is exposed for introspection - not just
@@ -26,7 +26,7 @@ export default function SchemaGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     What can you find here?
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Look up any class or enum, see its base classes and fields,
                     and follow links between related types. Field rows show
                     name, type, byte offset, size, and whether the field is
@@ -46,7 +46,7 @@ export default function SchemaGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     How SwiftlyS2 uses this
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     This is the same kind of data{" "}
                     <Link
                         href={REPO_URL}
@@ -71,7 +71,7 @@ export default function SchemaGameIndexPage() {
 
             <div className={CARD_CLASS}>
                 <h2 className="font-semibold text-white">Search tips</h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Type any text in the sidebar search to filter class, field,
                     and enum names - matching modules expand automatically.
                     Clear the search to browse module by module instead.

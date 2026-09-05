@@ -160,13 +160,13 @@ export function ProtobufSidebar({ gameId }: { gameId: string }) {
                 className="max-h-[calc(100vh-11rem)] overflow-y-auto"
             >
                 {status === "error" && (
-                    <p className="px-4 py-6 text-center font-mono text-xs text-zinc-600">
+                    <p className="px-4 py-6 text-center font-mono text-xs text-zinc-400">
                         Protobuf data is temporarily unavailable.
                     </p>
                 )}
 
                 {status === "done" && rows.length === 0 && (
-                    <p className="px-4 py-6 text-center font-mono text-xs text-zinc-600">
+                    <p className="px-4 py-6 text-center font-mono text-xs text-zinc-400">
                         No matches.
                     </p>
                 )}
@@ -201,7 +201,7 @@ export function ProtobufSidebar({ gameId }: { gameId: string }) {
                                         <span className="truncate font-mono text-sm text-white">
                                             {row.module}
                                         </span>
-                                        <span className="shrink-0 font-mono text-xs text-zinc-500">
+                                        <span className="shrink-0 font-mono text-xs text-zinc-400">
                                             {row.count}
                                         </span>
                                     </button>

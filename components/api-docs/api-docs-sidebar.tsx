@@ -41,7 +41,7 @@ function CategoryNode({
             >
                 <span className="min-w-0">{category.name}</span>
                 <ChevronRight
-                    className={`h-3.5 w-3.5 shrink-0 text-zinc-600 transition-transform ${open ? "rotate-90" : ""}`}
+                    className={`h-3.5 w-3.5 shrink-0 text-zinc-400 transition-transform ${open ? "rotate-90" : ""}`}
                 />
             </button>
             {open && (
@@ -97,7 +97,7 @@ export function ApiDocsSidebar({
                         <Link
                             key={b}
                             href={`${apiDocsPrefix(b)}${rest}`}
-                            className="flex-1 px-3 py-2 text-center uppercase tracking-wide text-zinc-500 transition-colors hover:text-white"
+                            className="flex-1 px-3 py-2 text-center uppercase tracking-wide text-zinc-400 transition-colors hover:text-white"
                         >
                             {b}
                         </Link>

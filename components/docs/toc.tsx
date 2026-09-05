@@ -37,7 +37,7 @@ export function Toc({ items }: { items: OutlineItem[] }) {
 
     return (
         <nav className="sticky top-20 flex max-h-[calc(100vh-6rem)] flex-col">
-            <div className="flex shrink-0 items-center gap-2 font-mono text-xs uppercase tracking-wide text-zinc-500">
+            <div className="flex shrink-0 items-center gap-2 font-mono text-xs uppercase tracking-wide text-zinc-400">
                 <List className="h-3.5 w-3.5" />
                 On this page
             </div>
@@ -53,7 +53,7 @@ export function Toc({ items }: { items: OutlineItem[] }) {
                         className={`block border-l -ml-px py-1 font-mono text-xs transition-colors ${
                             activeId === item.id
                                 ? "border-accent text-accent"
-                                : "border-transparent text-zinc-500 hover:text-white"
+                                : "border-transparent text-zinc-400 hover:text-white"
                         }`}
                     >
                         {item.text}

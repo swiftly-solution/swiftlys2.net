@@ -10,7 +10,7 @@ export default function ProtobufGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     What are these protobufs?
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Source 2 games exchange a lot of internal state - game
                     events, network messages, tooling data - through Protocol
                     Buffer messages compiled straight into each binary (
@@ -25,7 +25,7 @@ export default function ProtobufGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     What can you find here?
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Look up any message or enum by name, see its fields (label,
                     type, field number, default value), and follow links between
                     related message types. Each entry also lists which binaries
@@ -45,7 +45,7 @@ export default function ProtobufGameIndexPage() {
                 <h2 className="font-semibold text-white">
                     How SwiftlyS2 uses this
                 </h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     This is the same kind of message layout data{" "}
                     <Link
                         href={REPO_URL}
@@ -60,7 +60,7 @@ export default function ProtobufGameIndexPage() {
 
             <div className={CARD_CLASS}>
                 <h2 className="font-semibold text-white">Search tips</h2>
-                <p className="mt-2 text-sm text-zinc-500">
+                <p className="mt-2 text-sm text-zinc-400">
                     Type any text in the sidebar search to filter message, enum,
                     and field names - matching files expand automatically. Clear
                     the search to browse file by file instead. Field types link
