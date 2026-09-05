@@ -73,7 +73,7 @@ export async function DocPage({ slugParts }: { slugParts: string[] }) {
                 )}
                 <div className="mt-4">{content}</div>
             </article>
-            <div className="xl:col-start-3">
+            <div className="hidden xl:col-start-3 xl:block">
                 <Toc items={outline} />
             </div>
         </div>

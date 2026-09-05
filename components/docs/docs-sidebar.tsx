@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Menu, X } from "lucide-react";
 import { DocsSearch } from "@/components/docs/docs-search";
 
 export type DocsNavItem = {
@@ -74,11 +74,37 @@ function NavNode({ item, pathname }: { item: DocsNavItem; pathname: string }) {
 
 export function DocsSidebar({ items }: { items: DocsNavItem[] }) {
     const pathname = usePathname();
+    const [mobileOpen, setMobileOpen] = useState(false);
+
+    useEffect(() => {
+        setMobileOpen(false);
+    }, [pathname]);
 
     return (
-        <nav className="sticky top-20 h-fit space-y-3">
+        <nav className="space-y-3 lg:sticky lg:top-20 lg:h-fit">
             <DocsSearch />
-            <div className="space-y-1 rounded-2xl border border-white/10 bg-zinc-950/40 p-3">
+
+            <button
+                type="button"
+                onClick={() => setMobileOpen((o) => !o)}
+                aria-expanded={mobileOpen}
+                className="flex w-full items-center justify-between rounded-lg border border-white/10 bg-zinc-950/40 px-3 py-2 font-mono text-sm text-zinc-300 lg:hidden"
+            >
+                <span className="flex items-center gap-2">
+                    {mobileOpen ? (
+                        <X className="h-4 w-4" />
+                    ) : (
+                        <Menu className="h-4 w-4" />
+                    )}
+                    Docs menu
+                </span>
+            </button>
+
+            <div
+                className={`space-y-1 rounded-2xl border border-white/10 bg-zinc-950/40 p-3 ${
+                    mobileOpen ? "block" : "hidden"
+                } lg:block`}
+            >
                 {items.map((item) => (
                     <NavNode key={item.slug} item={item} pathname={pathname} />
                 ))}
