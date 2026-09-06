@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getGameEventsDump } from "@/lib/gameevents/dump";
-import { toEventHashHex } from "@/lib/gameevents/csharp";
+import { toEventHashHex, toEventInterfaceName, toPascalCase } from "@/lib/gameevents/csharp";
 import { getGame } from "@/lib/schema/games";
 
 const MAX_RESULTS = 100;
@@ -47,14 +47,19 @@ export async function GET(request: NextRequest) {
             continue;
         }
 
+        const csharpEventName = toEventInterfaceName(event.name).toLowerCase();
+        const eventNameMatches = (needle: string) =>
+            event.name.toLowerCase().includes(needle) ||
+            csharpEventName.includes(needle);
+        const fieldNameMatches = (field: { name: string }, needle: string) =>
+            field.name.toLowerCase().includes(needle) ||
+            toPascalCase(field.name).toLowerCase().includes(needle);
+
         if (fieldParam) {
             const matchedField = event.fields.find((f) =>
-                f.name.toLowerCase().includes(fieldParam),
+                fieldNameMatches(f, fieldParam),
             );
-            if (
-                matchedField &&
-                (!q || event.name.toLowerCase().includes(q))
-            ) {
+            if (matchedField && (!q || eventNameMatches(q))) {
                 results.push({
                     name: event.name,
                     files: event.files,
@@ -69,7 +74,7 @@ export async function GET(request: NextRequest) {
             continue;
         }
 
-        if (event.name.toLowerCase().includes(q)) {
+        if (eventNameMatches(q)) {
             results.push({ name: event.name, files: event.files });
             continue;
         }
@@ -80,9 +85,7 @@ export async function GET(request: NextRequest) {
             continue;
         }
 
-        const matchedField = event.fields.find((f) =>
-            f.name.toLowerCase().includes(q),
-        );
+        const matchedField = event.fields.find((f) => fieldNameMatches(f, q));
         if (matchedField) {
             results.push({
                 name: event.name,

@@ -9,6 +9,9 @@ import { getDocsMeta } from "@/lib/docs/dump";
 import { flattenDocsMetaWithTitles } from "@/lib/docs/tree";
 import { getApiDump } from "@/lib/api-docs/dump";
 import { apiDocsHref, buildFlatSequence } from "@/lib/api-docs/tree";
+import { toInterfaceName } from "@/lib/schema/codegen/csharp";
+import { toCSharpName } from "@/lib/protobuf/csharp";
+import { toEventInterfaceName } from "@/lib/gameevents/csharp";
 import type {
     GlobalSearchGroup,
     GlobalSearchItem,
@@ -32,7 +35,11 @@ export async function GET(request: NextRequest) {
     const schemaGroup = async (): Promise<GlobalSearchGroup> => {
         const dump = await getSchemaDump(gameId);
         const items: GlobalSearchItem[] = dump.classes
-            .filter((c) => c.name.toLowerCase().includes(q))
+            .filter(
+                (c) =>
+                    c.name.toLowerCase().includes(q) ||
+                    toInterfaceName(c.name).toLowerCase().includes(q),
+            )
             .map((c) => ({
                 label: c.name,
                 sublabel: c.project,
@@ -67,7 +74,10 @@ export async function GET(request: NextRequest) {
         const items: GlobalSearchItem[] = [];
         for (const file of dump.files) {
             for (const message of file.messages) {
-                if (message.name.toLowerCase().includes(q)) {
+                if (
+                    message.name.toLowerCase().includes(q) ||
+                    toCSharpName(message.name).toLowerCase().includes(q)
+                ) {
                     items.push({
                         label: message.name,
                         sublabel: file.fileName,
@@ -76,7 +86,10 @@ export async function GET(request: NextRequest) {
                 }
             }
             for (const protoEnum of file.enums) {
-                if (protoEnum.name.toLowerCase().includes(q)) {
+                if (
+                    protoEnum.name.toLowerCase().includes(q) ||
+                    toCSharpName(protoEnum.name).toLowerCase().includes(q)
+                ) {
                     items.push({
                         label: protoEnum.name,
                         sublabel: file.fileName,
@@ -91,7 +104,11 @@ export async function GET(request: NextRequest) {
     const entitiesGroup = async (): Promise<GlobalSearchGroup> => {
         const dump = await getEntitiesDump(gameId);
         const items: GlobalSearchItem[] = dump.entityClasses
-            .filter((c) => c.class_name.toLowerCase().includes(q))
+            .filter(
+                (c) =>
+                    c.class_name.toLowerCase().includes(q) ||
+                    toInterfaceName(c.class_name).toLowerCase().includes(q),
+            )
             .map((c) => ({
                 label: c.class_name,
                 href: `/entity-viewer/${gameId}/${encodeURIComponent(c.class_name)}`,
@@ -102,7 +119,11 @@ export async function GET(request: NextRequest) {
     const gameeventsGroup = async (): Promise<GlobalSearchGroup> => {
         const dump = await getGameEventsDump(gameId);
         const items: GlobalSearchItem[] = dump.events
-            .filter((e) => e.name.toLowerCase().includes(q))
+            .filter(
+                (e) =>
+                    e.name.toLowerCase().includes(q) ||
+                    toEventInterfaceName(e.name).toLowerCase().includes(q),
+            )
             .map((e) => ({
                 label: e.name,
                 href: `/gameevents-viewer/${gameId}/${encodeURIComponent(e.name)}`,

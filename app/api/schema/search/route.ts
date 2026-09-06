@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSchemaDump } from "@/lib/schema/dump";
 import { getGame } from "@/lib/schema/games";
+import { toFieldName } from "@/lib/schema/codegen/csharp";
 
 const MAX_RESULTS = 100;
 
@@ -78,9 +79,17 @@ export async function GET(request: NextRequest) {
                 if (fields.length >= MAX_RESULTS) break outer;
                 const nameLower = field.name.toLowerCase();
                 const typeLower = field.type.toLowerCase();
+                // Also match the C# property name (m_fFlags -> Flags) so a
+                // search for either naming scheme finds the same field.
+                const csharpNameLower = toFieldName(field.name).toLowerCase();
 
                 if (hasKeyFilter) {
-                    if (fieldParam && !nameLower.includes(fieldParam)) continue;
+                    if (
+                        fieldParam &&
+                        !nameLower.includes(fieldParam) &&
+                        !csharpNameLower.includes(fieldParam)
+                    )
+                        continue;
                     if (typeParam && !typeLower.includes(typeParam)) continue;
                     if (targetOffset !== null && field.offset !== targetOffset) {
                         continue;
@@ -91,9 +100,19 @@ export async function GET(request: NextRequest) {
                     ) {
                         continue;
                     }
-                    if (q && !nameLower.includes(q)) continue;
+                    if (
+                        q &&
+                        !nameLower.includes(q) &&
+                        !csharpNameLower.includes(q)
+                    )
+                        continue;
                 } else {
-                    if (!nameLower.includes(q) && !typeLower.includes(q)) continue;
+                    if (
+                        !nameLower.includes(q) &&
+                        !typeLower.includes(q) &&
+                        !csharpNameLower.includes(q)
+                    )
+                        continue;
                 }
 
                 fields.push({

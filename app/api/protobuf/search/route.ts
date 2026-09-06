@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getProtobufDump } from "@/lib/protobuf/dump";
-import { computeNetMessageIds } from "@/lib/protobuf/csharp";
+import { computeNetMessageIds, toCSharpFieldName, toCSharpName } from "@/lib/protobuf/csharp";
 import { getGame } from "@/lib/schema/games";
 
 const MAX_RESULTS = 100;
@@ -73,7 +73,11 @@ export async function GET(request: NextRequest) {
                     continue;
                 }
 
-                if (message.name.toLowerCase().includes(q)) {
+                const csharpMessageName = toCSharpName(message.name).toLowerCase();
+                if (
+                    message.name.toLowerCase().includes(q) ||
+                    csharpMessageName.includes(q)
+                ) {
                     results.push({
                         file: file.fileName,
                         modules: file.modules,
@@ -98,8 +102,11 @@ export async function GET(request: NextRequest) {
                     }
                 }
 
-                const matchedField = message.fields.find((f) =>
-                    f.name.toLowerCase().includes(q),
+                // Also match the C# property name (some_field -> SomeField).
+                const matchedField = message.fields.find(
+                    (f) =>
+                        f.name.toLowerCase().includes(q) ||
+                        toCSharpFieldName(f.name).toLowerCase().includes(q),
                 );
                 if (matchedField) {
                     results.push({
@@ -117,7 +124,11 @@ export async function GET(request: NextRequest) {
             for (const protoEnum of file.enums) {
                 if (results.length >= MAX_RESULTS) break outer;
 
-                if (!q || protoEnum.name.toLowerCase().includes(q)) {
+                if (
+                    !q ||
+                    protoEnum.name.toLowerCase().includes(q) ||
+                    toCSharpName(protoEnum.name).toLowerCase().includes(q)
+                ) {
                     results.push({
                         file: file.fileName,
                         modules: file.modules,

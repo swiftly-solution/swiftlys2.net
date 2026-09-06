@@ -1,29 +1,19 @@
 import { REPO_URL } from "@/lib/github";
-import { getDocPageSource, getDocsMeta } from "@/lib/docs/dump";
-import { extractFrontmatterTitle } from "@/lib/docs/frontmatter";
-import { flattenDocsMeta } from "@/lib/docs/tree";
+import { getDocPageSource } from "@/lib/docs/dump";
+import { docHref, listDocPages } from "@/lib/docs/pages";
 
 const DISCORD_URL = "https://swiftlys2.net/discord";
 
-function docHref(baseUrl: string, slug: string): string {
-    return slug === "_index" ? `${baseUrl}/docs` : `${baseUrl}/docs/${slug}`;
-}
-
-async function listDocPages(
-    baseUrl: string,
-): Promise<{ slug: string; page: string; title: string }[]> {
-    const meta = await getDocsMeta();
-    return Promise.all(
-        flattenDocsMeta(meta).map(async ({ slug, page }) => {
-            let title = slug;
-            try {
-                const source = await getDocPageSource(page);
-                title = extractFrontmatterTitle(source) ?? slug;
-            } catch {}
-            return { slug, page, title };
-        }),
-    );
-}
+const MCP_TOOLS = [
+    "schema_lookup", "schema_list", "schema_search",
+    "entity_lookup", "entity_list", "entity_search",
+    "protobuf_lookup", "protobuf_list", "protobuf_search",
+    "gameevent_lookup", "gameevent_list", "gameevent_search",
+    "convar_lookup", "convar_list", "convar_search",
+    "apidocs_lookup", "apidocs_list", "apidocs_search",
+    "docs_list", "docs_search",
+    "site_search",
+];
 
 export async function buildLlmsTxt(baseUrl: string): Promise<string> {
     const lines: string[] = [];
@@ -36,8 +26,8 @@ export async function buildLlmsTxt(baseUrl: string): Promise<string> {
 
     lines.push("## Docs");
     try {
-        for (const { slug, title } of await listDocPages(baseUrl)) {
-            lines.push(`- [${title}](${docHref(baseUrl, slug)})`);
+        for (const { slug, title } of await listDocPages()) {
+            lines.push(`- [${title}](${baseUrl}${docHref(slug)})`);
         }
     } catch {
         lines.push(`- [Docs](${baseUrl}/docs)`);
@@ -61,7 +51,7 @@ export async function buildLlmsTxt(baseUrl: string): Promise<string> {
         `- [AI tools overview](${baseUrl}/ai) - how to connect an MCP client`,
     );
     lines.push(
-        `- MCP server endpoint: \`${baseUrl}/api/mcp\` (Streamable HTTP) - tools: schema_lookup, entity_lookup, protobuf_lookup, gameevent_lookup, convar_lookup, apidocs_lookup`,
+        `- MCP server endpoint: \`${baseUrl}/api/mcp\` (Streamable HTTP) - tools: ${MCP_TOOLS.join(", ")}`,
     );
     lines.push(`- [Full docs dump](${baseUrl}/llms-full.txt)`);
     lines.push("");
@@ -78,11 +68,10 @@ export async function buildLlmsFullTxt(baseUrl: string): Promise<string> {
     const sections: string[] = [header, "\n---\n"];
 
     try {
-        const meta = await getDocsMeta();
-        for (const { slug, page } of flattenDocsMeta(meta)) {
+        for (const { slug, page } of await listDocPages()) {
             try {
                 const source = await getDocPageSource(page);
-                sections.push(`\n## ${docHref(baseUrl, slug)}\n\n${source}\n`);
+                sections.push(`\n## ${baseUrl}${docHref(slug)}\n\n${source}\n`);
             } catch { }
         }
     } catch { }

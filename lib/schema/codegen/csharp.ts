@@ -168,7 +168,7 @@ function removePrefix(text: string, prefix: string): string {
     return text.startsWith(prefix) ? text.slice(prefix.length) : text;
 }
 
-function toFieldName(fieldName: string): string {
+export function toFieldName(fieldName: string): string {
     fieldName = removePrefix(fieldName, "m_");
     for (const prefix of FIELD_TYPE_PREFIXES) {
         if (fieldName.toLowerCase().startsWith(prefix.toLowerCase())) {

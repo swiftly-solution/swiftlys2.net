@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getEntitiesDump } from "@/lib/entities/dump";
 import { getGame } from "@/lib/schema/games";
+import { toFieldName, toInterfaceName } from "@/lib/schema/codegen/csharp";
 import type { DatamapField } from "@/lib/entities/types";
 
 const MAX_RESULTS = 100;
@@ -29,21 +30,20 @@ function fieldMatches(
     q: string,
     fieldParam: string,
 ): boolean {
+    const csharpName = toFieldName(field.fieldName).toLowerCase();
+    const fieldNameMatches = (needle: string) =>
+        field.fieldName.toLowerCase().includes(needle) ||
+        csharpName.includes(needle);
+
     if (fieldParam) {
-        if (!field.fieldName.toLowerCase().includes(fieldParam)) return false;
+        if (!fieldNameMatches(fieldParam)) return false;
         if (q) {
-            return (
-                field.externalName.toLowerCase().includes(q) ||
-                field.fieldName.toLowerCase().includes(q)
-            );
+            return field.externalName.toLowerCase().includes(q) || fieldNameMatches(q);
         }
         return true;
     }
     if (q) {
-        return (
-            field.externalName.toLowerCase().includes(q) ||
-            field.fieldName.toLowerCase().includes(q)
-        );
+        return field.externalName.toLowerCase().includes(q) || fieldNameMatches(q);
     }
     return true;
 }
@@ -77,7 +77,11 @@ export async function GET(request: NextRequest) {
     if (q) {
         for (const dm of dump.datamaps) {
             if (classes.length >= MAX_CLASS_RESULTS) break;
-            if (dm.class_name.toLowerCase().includes(q)) {
+            const csharpName = toInterfaceName(dm.class_name).toLowerCase();
+            if (
+                dm.class_name.toLowerCase().includes(q) ||
+                csharpName.includes(q)
+            ) {
                 classes.push(dm.class_name);
             }
         }

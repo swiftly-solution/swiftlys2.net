@@ -4,42 +4,64 @@ import { CopyBlock } from "@/components/ai/copy-block";
 
 const CARD_CLASS = "rounded-2xl border border-white/10 bg-zinc-950/40 p-6";
 
-const TOOLS = [
+const DOMAINS = [
     {
-        name: "schema_lookup",
-        summary:
-            "Resolve a Source 2 schema class or enum by name and return its fields plus a schema-viewer link.",
-        example: '{ "name": "CBaseEntity" }',
+        domain: "Schema",
+        tools: [
+            { name: "schema_lookup", desc: "Exact class/enum by name -> fields + link." },
+            { name: "schema_list", desc: "Browse projects, or list a project's classes/enums." },
+            { name: "schema_search", desc: "Search fields by name, type, offset, networked." },
+        ],
     },
     {
-        name: "entity_lookup",
-        summary:
-            "Resolve an entity class by name and return its datamap (inputs/outputs/members) plus an entity-viewer link.",
-        example: '{ "className": "CCSPlayerPawn" }',
+        domain: "Entities",
+        tools: [
+            { name: "entity_lookup", desc: "Exact entity class by name -> datamap + link." },
+            { name: "entity_list", desc: "List entity class names, optionally by prefix." },
+            { name: "entity_search", desc: "Search classes and input/output/member fields." },
+        ],
     },
     {
-        name: "protobuf_lookup",
-        summary:
-            "Resolve a protobuf message or enum by name and return its fields/values plus a protobuf-viewer link.",
-        example: '{ "name": "CMsgSayText2" }',
+        domain: "Protobuf",
+        tools: [
+            { name: "protobuf_lookup", desc: "Exact message/enum by name -> fields + link." },
+            { name: "protobuf_list", desc: "Browse modules/files, or list one's contents." },
+            { name: "protobuf_search", desc: "Search by name, net message id, kind, file." },
+        ],
     },
     {
-        name: "gameevent_lookup",
-        summary:
-            "Resolve a game event by name and return its fields plus a game-events-viewer link.",
-        example: '{ "name": "player_death" }',
+        domain: "Game events",
+        tools: [
+            { name: "gameevent_lookup", desc: "Exact event by name -> fields + link." },
+            { name: "gameevent_list", desc: "Browse gameevents files, or list one's events." },
+            { name: "gameevent_search", desc: "Search by name, field name, or hex hash." },
+        ],
     },
     {
-        name: "convar_lookup",
-        summary:
-            "Resolve a convar or concommand by name and return its flags/description plus a convars-viewer link.",
-        example: '{ "name": "sv_cheats" }',
+        domain: "ConVars",
+        tools: [
+            { name: "convar_lookup", desc: "Exact convar/concommand by name -> flags + link." },
+            { name: "convar_list", desc: "Browse modules, or list one's entries." },
+            {
+                name: "convar_search",
+                desc: "Full tag search: kind + include/exclude module, flag, attribute.",
+            },
+        ],
     },
     {
-        name: "apidocs_lookup",
-        summary:
-            "Resolve a SwiftlyS2 C# API type (optionally a specific member) and return its declaration plus an API docs link.",
-        example: '{ "name": "IPlayerManagerService", "member": "SendCenterHTML" }',
+        domain: "API docs",
+        tools: [
+            { name: "apidocs_lookup", desc: "Exact type (or member) by name -> declaration + link." },
+            { name: "apidocs_list", desc: "Browse categories, or list one's types." },
+            { name: "apidocs_search", desc: "Search type/member names and summaries." },
+        ],
+    },
+    {
+        domain: "Docs",
+        tools: [
+            { name: "docs_list", desc: "List every docs page with its title and URL." },
+            { name: "docs_search", desc: "Search page bodies and headings for a snippet." },
+        ],
     },
 ];
 
@@ -103,25 +125,53 @@ export default async function AiPage() {
                     <Wrench className="h-5 w-5 text-accent" />
                     Available tools
                 </h2>
+                <p className="mt-2 max-w-3xl text-sm text-zinc-400">
+                    Every domain gets the same three shapes: <code className="text-accent">*_lookup</code>{" "}
+                    for an exact name, <code className="text-accent">*_list</code> to browse without
+                    knowing a name yet, and <code className="text-accent">*_search</code> - the same
+                    engine behind that domain&apos;s search bar, filters and all.
+                </p>
+
+                <div className={`${CARD_CLASS} mt-4 border-accent/30 bg-accent/5`}>
+                    <div className="flex items-center justify-between gap-3">
+                        <code className="font-mono text-sm text-accent">site_search</code>
+                        <span className="rounded-full border border-accent/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-accent">
+                            searches everything
+                        </span>
+                    </div>
+                    <p className="mt-2 text-sm text-zinc-400">
+                        One call across schema, entities, protobuf, game events,
+                        convars, and docs at once - exactly like the{" "}
+                        <span className="text-accent">site:</span> prefix in the
+                        site&apos;s own search bar. Start here when you don&apos;t
+                        know which domain to reach for.
+                    </p>
+                </div>
+
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    {TOOLS.map((tool) => (
-                        <div key={tool.name} className={CARD_CLASS}>
-                            <code className="font-mono text-sm text-accent">
-                                {tool.name}
-                            </code>
-                            <p className="mt-2 text-sm text-zinc-400">
-                                {tool.summary}
-                            </p>
-                            <pre className="mt-3 overflow-x-auto rounded-lg border border-white/10 bg-black/30 px-3 py-2 font-mono text-xs text-zinc-300">
-                                {tool.example}
-                            </pre>
+                    {DOMAINS.map((group) => (
+                        <div key={group.domain} className={CARD_CLASS}>
+                            <div className="font-mono text-sm font-semibold text-white">
+                                {group.domain}
+                            </div>
+                            <div className="mt-3 space-y-2.5">
+                                {group.tools.map((tool) => (
+                                    <div key={tool.name}>
+                                        <code className="font-mono text-xs text-accent">
+                                            {tool.name}
+                                        </code>
+                                        <p className="text-xs text-zinc-400">{tool.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ))}
                 </div>
                 <p className="mt-4 text-sm text-zinc-500">
-                    Every tool auto-resolves what it can (schema project,
-                    protobuf file, convar module) from just a name, and returns
-                    a direct link to the matching page alongside the data.
+                    Lookups auto-resolve what they can (schema project, protobuf
+                    file, convar module) from just a name. List/search results
+                    are capped and report a total + truncated flag rather than
+                    ever dumping an entire dump into context.
                 </p>
             </section>
 
