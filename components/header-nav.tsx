@@ -14,6 +14,7 @@ const DISCORD_URL = "https://swiftlys2.net/discord";
 const NAV = [
     { label: "docs", href: "/docs" },
     { label: "api", href: "/api-docs/stable" },
+    { label: "ai", href: "/ai" },
 ];
 
 type Mode = "compact" | "expanded";
