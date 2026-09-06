@@ -4,7 +4,7 @@ export function SiteFooter() {
             <div className="mx-auto max-w-6xl px-6 py-8">
                 <div className="flex flex-col justify-between gap-2 text-xs text-zinc-600 md:flex-row">
                     <span>
-                        © {new Date().getFullYear()} SwiftlyLabs.net - licensed
+                        © 2025-{new Date().getFullYear()} SwiftlyLabs.net - licensed
                         GPLv3
                     </span>
                     <span>
