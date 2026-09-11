@@ -26,6 +26,7 @@ const SOURCE_LABELS: Record<GlobalSearchGroup["source"], string> = {
     protobuf: "Protobuf",
     entities: "Entities",
     gameevents: "Game Events",
+    panorama: "Panorama",
     docs: "Docs",
 };
 

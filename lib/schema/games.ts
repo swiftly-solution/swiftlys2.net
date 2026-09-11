@@ -12,6 +12,7 @@ export type Game = {
     datamapsPath: string;
     protobufsPath: string;
     gameEventsPaths: { file: string; path: string }[];
+    panoramaPath: string;
 };
 
 export const GAMES: Game[] = [
@@ -42,6 +43,7 @@ export const GAMES: Game[] = [
                 path: "install/game/csgo/pak01/resource/mod.gameevents",
             },
         ],
+        panoramaPath: "dump/panorama.json",
     },
 ];
 

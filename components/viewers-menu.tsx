@@ -11,6 +11,7 @@ export const VIEWERS = [
     { label: "entity", href: "/entity-viewer" },
     { label: "protobuf", href: "/protobuf-viewer" },
     { label: "events", href: "/gameevents-viewer" },
+    { label: "panorama", href: "/panorama-viewer" },
 ];
 
 export function ViewersMenu() {

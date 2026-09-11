@@ -5,6 +5,7 @@ import { registerEntityTools } from "@/lib/mcp/tools/entity";
 import { registerProtobufTools } from "@/lib/mcp/tools/protobuf";
 import { registerGameEventTools } from "@/lib/mcp/tools/gameevent";
 import { registerConvarTools } from "@/lib/mcp/tools/convar";
+import { registerPanoramaTools } from "@/lib/mcp/tools/panorama";
 import { registerApiDocsTools } from "@/lib/mcp/tools/apidocs";
 import { registerDocsTools } from "@/lib/mcp/tools/docs";
 import { registerSiteTools } from "@/lib/mcp/tools/site";
@@ -22,6 +23,7 @@ export function createMcpServer(baseUrl: string): McpServer {
     registerProtobufTools(server, ctx);
     registerGameEventTools(server, ctx);
     registerConvarTools(server, ctx);
+    registerPanoramaTools(server, ctx);
     registerApiDocsTools(server, ctx);
     registerDocsTools(server, ctx);
     registerSiteTools(server, ctx);

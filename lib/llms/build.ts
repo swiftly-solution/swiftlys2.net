@@ -10,6 +10,7 @@ const MCP_TOOLS = [
     "protobuf_lookup", "protobuf_list", "protobuf_search",
     "gameevent_lookup", "gameevent_list", "gameevent_search",
     "convar_lookup", "convar_list", "convar_search",
+    "panorama_lookup", "panorama_list", "panorama_search",
     "apidocs_lookup", "apidocs_list", "apidocs_search",
     "docs_list", "docs_search",
     "site_search",
@@ -44,6 +45,7 @@ export async function buildLlmsTxt(baseUrl: string): Promise<string> {
     lines.push(`- [Protobuf viewer](${baseUrl}/protobuf-viewer)`);
     lines.push(`- [Game events viewer](${baseUrl}/gameevents-viewer)`);
     lines.push(`- [ConVars & ConCommands viewer](${baseUrl}/convars-viewer)`);
+    lines.push(`- [Panorama property viewer](${baseUrl}/panorama-viewer)`);
     lines.push("");
 
     lines.push("## AI tools");

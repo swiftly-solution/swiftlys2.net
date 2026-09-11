@@ -4,7 +4,8 @@ export type ViewerId =
     | "convars"
     | "protobuf"
     | "entities"
-    | "gameevents";
+    | "gameevents"
+    | "panorama";
 
 export type FilterKeyInfo = {
     key: string;
@@ -18,6 +19,7 @@ export const VIEWER_HREF: Record<ViewerId, string> = {
     protobuf: "/protobuf-viewer",
     entities: "/entity-viewer",
     gameevents: "/gameevents-viewer",
+    panorama: "/panorama-viewer",
 };
 
 export const VIEWER_FILTER_KEYS: Record<ViewerId, FilterKeyInfo[]> = {
@@ -121,4 +123,5 @@ export const VIEWER_FILTER_KEYS: Record<ViewerId, FilterKeyInfo[]> = {
             example: "field:userid",
         },
     ],
+    panorama: [],
 };

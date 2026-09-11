@@ -5,6 +5,7 @@ import { getConvarsDump } from "@/lib/convars/dump";
 import { getProtobufDump } from "@/lib/protobuf/dump";
 import { getEntitiesDump } from "@/lib/entities/dump";
 import { getGameEventsDump } from "@/lib/gameevents/dump";
+import { getPanoramaDump } from "@/lib/panorama/dump";
 import { getDocsMeta } from "@/lib/docs/dump";
 import { flattenDocsMetaWithTitles } from "@/lib/docs/tree";
 import { getApiDump } from "@/lib/api-docs/dump";
@@ -131,6 +132,17 @@ export async function GET(request: NextRequest) {
         return { source: "gameevents", total: items.length, items: items.slice(0, MAX_PER_GROUP) };
     };
 
+    const panoramaGroup = async (): Promise<GlobalSearchGroup> => {
+        const dump = await getPanoramaDump(gameId);
+        const items: GlobalSearchItem[] = dump.properties
+            .filter((p) => p.name.toLowerCase().includes(q))
+            .map((p) => ({
+                label: p.name,
+                href: `/panorama-viewer/${gameId}/${encodeURIComponent(p.name)}`,
+            }));
+        return { source: "panorama", total: items.length, items: items.slice(0, MAX_PER_GROUP) };
+    };
+
     const docsItems = async (): Promise<{ total: number; items: GlobalSearchItem[] }> => {
         const meta = await getDocsMeta();
         const entries = flattenDocsMetaWithTitles(meta);
@@ -159,6 +171,7 @@ export async function GET(request: NextRequest) {
         protobufResult,
         entitiesResult,
         gameeventsResult,
+        panoramaResult,
         docsResult,
         apiDocsResult,
     ] = await Promise.allSettled([
@@ -167,6 +180,7 @@ export async function GET(request: NextRequest) {
         protobufGroup(),
         entitiesGroup(),
         gameeventsGroup(),
+        panoramaGroup(),
         docsItems(),
         apiDocsItems(),
     ]);
@@ -192,6 +206,11 @@ export async function GET(request: NextRequest) {
         gameeventsResult.status === "fulfilled"
             ? gameeventsResult.value
             : emptyGroup("gameevents"),
+    );
+    groups.push(
+        panoramaResult.status === "fulfilled"
+            ? panoramaResult.value
+            : emptyGroup("panorama"),
     );
 
     const docsPart =
