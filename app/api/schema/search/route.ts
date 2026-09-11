@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSchemaDump } from "@/lib/schema/dump";
 import { getGame } from "@/lib/schema/games";
-import { toFieldName } from "@/lib/schema/codegen/csharp";
+import { toFieldName, toInterfaceName } from "@/lib/schema/codegen/csharp";
 
 const MAX_RESULTS = 100;
 
@@ -20,7 +20,14 @@ export type EnumValueSearchResult = {
     value: number;
 };
 
+export type ClassSearchResult = {
+    project: string;
+    name: string;
+    kind: "class" | "enum";
+};
+
 export type SchemaSearchResponse = {
+    classes: ClassSearchResult[];
     fields: FieldSearchResult[];
     enumValues: EnumValueSearchResult[];
 };
@@ -38,7 +45,8 @@ export async function GET(request: NextRequest) {
         request.nextUrl.searchParams.get("field")?.trim().toLowerCase() ?? "";
     const typeParam =
         request.nextUrl.searchParams.get("type")?.trim().toLowerCase() ?? "";
-    const offsetParam = request.nextUrl.searchParams.get("offset")?.trim() ?? "";
+    const offsetParam =
+        request.nextUrl.searchParams.get("offset")?.trim() ?? "";
     const enumvalueParam =
         request.nextUrl.searchParams.get("enumvalue")?.trim() ?? "";
     const networkedParam = request.nextUrl.searchParams
@@ -53,13 +61,21 @@ export async function GET(request: NextRequest) {
     const targetOffset = parseIntFlexible(offsetParam);
     const targetEnumValue = parseIntFlexible(enumvalueParam);
     const targetNetworked =
-        networkedParam === "true" ? true : networkedParam === "false" ? false : null;
+        networkedParam === "true"
+            ? true
+            : networkedParam === "false"
+              ? false
+              : null;
     const hasKeyFilter = Boolean(
-        fieldParam || typeParam || targetOffset !== null || targetNetworked !== null,
+        fieldParam ||
+        typeParam ||
+        targetOffset !== null ||
+        targetNetworked !== null,
     );
 
     if (!q && !hasKeyFilter && targetEnumValue === null) {
         return NextResponse.json({
+            classes: [],
             fields: [],
             enumValues: [],
         } satisfies SchemaSearchResponse);
@@ -73,7 +89,7 @@ export async function GET(request: NextRequest) {
     }
 
     const fields: FieldSearchResult[] = [];
-    if (q || hasKeyFilter) {
+    if (hasKeyFilter) {
         outer: for (const c of dump.classes) {
             for (const field of c.fields ?? []) {
                 if (fields.length >= MAX_RESULTS) break outer;
@@ -83,37 +99,24 @@ export async function GET(request: NextRequest) {
                 // search for either naming scheme finds the same field.
                 const csharpNameLower = toFieldName(field.name).toLowerCase();
 
-                if (hasKeyFilter) {
-                    if (
-                        fieldParam &&
-                        !nameLower.includes(fieldParam) &&
-                        !csharpNameLower.includes(fieldParam)
-                    )
-                        continue;
-                    if (typeParam && !typeLower.includes(typeParam)) continue;
-                    if (targetOffset !== null && field.offset !== targetOffset) {
-                        continue;
-                    }
-                    if (
-                        targetNetworked !== null &&
-                        field.networked !== targetNetworked
-                    ) {
-                        continue;
-                    }
-                    if (
-                        q &&
-                        !nameLower.includes(q) &&
-                        !csharpNameLower.includes(q)
-                    )
-                        continue;
-                } else {
-                    if (
-                        !nameLower.includes(q) &&
-                        !typeLower.includes(q) &&
-                        !csharpNameLower.includes(q)
-                    )
-                        continue;
+                if (
+                    fieldParam &&
+                    !nameLower.includes(fieldParam) &&
+                    !csharpNameLower.includes(fieldParam)
+                )
+                    continue;
+                if (typeParam && !typeLower.includes(typeParam)) continue;
+                if (targetOffset !== null && field.offset !== targetOffset) {
+                    continue;
                 }
+                if (
+                    targetNetworked !== null &&
+                    field.networked !== targetNetworked
+                ) {
+                    continue;
+                }
+                if (q && !nameLower.includes(q) && !csharpNameLower.includes(q))
+                    continue;
 
                 fields.push({
                     project: c.project,
@@ -121,6 +124,36 @@ export async function GET(request: NextRequest) {
                     fieldName: field.name,
                     fieldType: field.type,
                     networked: field.networked,
+                });
+            }
+        }
+    }
+
+    const classes: ClassSearchResult[] = [];
+    if (q && !hasKeyFilter) {
+        for (const c of dump.classes) {
+            if (classes.length >= MAX_RESULTS) break;
+            if (
+                c.name.toLowerCase().includes(q) ||
+                toInterfaceName(c.name).toLowerCase().includes(q)
+            ) {
+                classes.push({
+                    project: c.project,
+                    name: c.name,
+                    kind: "class",
+                });
+            }
+        }
+        for (const e of dump.enums) {
+            if (classes.length >= MAX_RESULTS) break;
+            if (
+                e.name.toLowerCase().includes(q) ||
+                toInterfaceName(e.name).toLowerCase().includes(q)
+            ) {
+                classes.push({
+                    project: e.project,
+                    name: e.name,
+                    kind: "enum",
                 });
             }
         }
@@ -142,5 +175,9 @@ export async function GET(request: NextRequest) {
         }
     }
 
-    return NextResponse.json({ fields, enumValues } satisfies SchemaSearchResponse);
+    return NextResponse.json({
+        classes,
+        fields,
+        enumValues,
+    } satisfies SchemaSearchResponse);
 }

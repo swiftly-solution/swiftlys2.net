@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type {
+    ClassSearchResult,
     EnumValueSearchResult,
     FieldSearchResult,
     SchemaSearchResponse,
@@ -10,11 +11,12 @@ import type {
 import { parseSearchQuery, tokenValue } from "@/lib/search/query";
 import { useViewerSearch } from "@/components/search/viewer-search-context";
 
-const MIN_FIELD_QUERY_LENGTH = 2;
+const MIN_QUERY_LENGTH = 2;
 const FIELD_SEARCH_DEBOUNCE_MS = 250;
 
 export function SchemaSearchResults({ gameId }: { gameId: string }) {
     const { query } = useViewerSearch();
+    const [classMatches, setClassMatches] = useState<ClassSearchResult[]>([]);
     const [fieldMatches, setFieldMatches] = useState<FieldSearchResult[]>([]);
     const [enumMatches, setEnumMatches] = useState<EnumValueSearchResult[]>([]);
 
@@ -24,21 +26,27 @@ export function SchemaSearchResults({ gameId }: { gameId: string }) {
     const typeToken = tokenValue(parsed.tokens, "type");
     const offsetToken = tokenValue(parsed.tokens, "offset");
     const enumvalueToken = tokenValue(parsed.tokens, "enumvalue");
-    const rawNetworkedToken = tokenValue(parsed.tokens, "networked")?.toLowerCase();
+    const rawNetworkedToken = tokenValue(
+        parsed.tokens,
+        "networked",
+    )?.toLowerCase();
     const networkedToken =
         rawNetworkedToken === "true" || rawNetworkedToken === "false"
             ? rawNetworkedToken
             : undefined;
 
     useEffect(() => {
-        const hasFieldSearch =
-            normalizedQuery.length >= MIN_FIELD_QUERY_LENGTH ||
-            Boolean(fieldToken || typeToken || offsetToken || networkedToken);
+        const hasFieldSearch = Boolean(
+            fieldToken || typeToken || offsetToken || networkedToken,
+        );
+        const hasClassSearch =
+            !hasFieldSearch && normalizedQuery.length >= MIN_QUERY_LENGTH;
         const hasEnumSearch = Boolean(enumvalueToken);
 
+        if (!hasClassSearch) setClassMatches([]);
         if (!hasFieldSearch) setFieldMatches([]);
         if (!hasEnumSearch) setEnumMatches([]);
-        if (!hasFieldSearch && !hasEnumSearch) return;
+        if (!hasClassSearch && !hasFieldSearch && !hasEnumSearch) return;
 
         let cancelled = false;
         const timer = setTimeout(async () => {
@@ -57,11 +65,13 @@ export function SchemaSearchResults({ gameId }: { gameId: string }) {
                 if (!res.ok) return;
                 const data = (await res.json()) as SchemaSearchResponse;
                 if (!cancelled) {
+                    setClassMatches(hasClassSearch ? data.classes : []);
                     setFieldMatches(hasFieldSearch ? data.fields : []);
                     setEnumMatches(hasEnumSearch ? data.enumValues : []);
                 }
             } catch {
                 if (!cancelled) {
+                    setClassMatches([]);
                     setFieldMatches([]);
                     setEnumMatches([]);
                 }
@@ -82,10 +92,48 @@ export function SchemaSearchResults({ gameId }: { gameId: string }) {
         networkedToken,
     ]);
 
-    if (fieldMatches.length === 0 && enumMatches.length === 0) return null;
+    if (
+        classMatches.length === 0 &&
+        fieldMatches.length === 0 &&
+        enumMatches.length === 0
+    )
+        return null;
 
     return (
         <div className="mb-4 max-h-72 space-y-4 overflow-y-auto border-b border-white/10 pb-4">
+            {classMatches.length > 0 && (
+                <div>
+                    <div className="font-mono text-xs uppercase tracking-wide text-zinc-500">
+                        Classes ({classMatches.length})
+                    </div>
+                    <div className="mt-1.5 space-y-1">
+                        {classMatches.map((match) => (
+                            <Link
+                                key={`${match.project}/${match.name}`}
+                                href={`/schema-viewer/${gameId}/${match.project}/${encodeURIComponent(match.name)}`}
+                                className="flex items-center gap-2 rounded-lg px-2 py-1 font-mono text-xs text-zinc-300 transition-colors hover:bg-white/[0.05] hover:text-accent"
+                            >
+                                <span
+                                    className={
+                                        match.kind === "enum"
+                                            ? "text-amber-400"
+                                            : "text-accent"
+                                    }
+                                >
+                                    {match.kind === "enum" ? "E" : "C"}
+                                </span>
+                                <span className="min-w-0 flex-1 truncate">
+                                    {match.name}
+                                </span>
+                                <span className="shrink-0 text-zinc-600">
+                                    {match.project}
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {fieldMatches.length > 0 && (
                 <div>
                     <div className="font-mono text-xs uppercase tracking-wide text-zinc-500">
