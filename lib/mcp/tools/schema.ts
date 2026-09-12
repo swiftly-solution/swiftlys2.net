@@ -1,9 +1,19 @@
 import { z } from "zod";
 import { getGame } from "@/lib/schema/games";
 import { getSchemaDump } from "@/lib/schema/dump";
-import { buildModuleIndex, buildNameIndex, findEntry } from "@/lib/schema/queries";
+import {
+    buildModuleIndex,
+    buildNameIndex,
+    findEntry,
+} from "@/lib/schema/queries";
 import { toInterfaceName } from "@/lib/schema/codegen/csharp";
-import { capList, errorResult, fetchJson, gameParam, textResult } from "@/lib/mcp/context";
+import {
+    capList,
+    errorResult,
+    fetchJson,
+    gameParam,
+    textResult,
+} from "@/lib/mcp/context";
 import { defineTool, type ToolGroup } from "@/lib/mcp/tools/types";
 import type { SchemaSearchResponse } from "@/app/api/schema/search/route";
 
@@ -16,11 +26,17 @@ export const schemaToolGroup: ToolGroup = {
             description:
                 "Resolve a Source 2 schema class or enum by name and return its fields/members plus a link to the schema viewer. Accepts either the raw name or its C# interface name. Project is auto-resolved if omitted.",
             inputSchema: {
-                name: z.string().describe("Class or enum name, raw or C#, e.g. CBaseEntity"),
+                name: z
+                    .string()
+                    .describe(
+                        "Class or enum name, raw or C#, e.g. CBaseEntity",
+                    ),
                 project: z
                     .string()
                     .optional()
-                    .describe("Schema project bucket, e.g. server. Auto-resolved if omitted."),
+                    .describe(
+                        "Schema project bucket, e.g. server. Auto-resolved if omitted.",
+                    ),
                 game: gameParam,
             },
             handler: async ({ name, project, game }, ctx) => {
@@ -49,10 +65,13 @@ export const schemaToolGroup: ToolGroup = {
                 if (!resolvedProject) {
                     const links = nameIndex.get(resolvedName);
                     if (!links || links.length === 0) {
-                        return errorResult(`No schema class or enum named "${name}" found.`);
+                        return errorResult(
+                            `No schema class or enum named "${name}" found.`,
+                        );
                     }
                     resolvedProject =
-                        links.find((l) => l.project === "server")?.project ?? links[0].project;
+                        links.find((l) => l.project === "server")?.project ??
+                        links[0].project;
                 }
 
                 const found = findEntry(dump, resolvedProject, resolvedName);
@@ -80,7 +99,9 @@ export const schemaToolGroup: ToolGroup = {
                 project: z
                     .string()
                     .optional()
-                    .describe("Project to list classes/enums for, e.g. server."),
+                    .describe(
+                        "Project to list classes/enums for, e.g. server.",
+                    ),
                 game: gameParam,
             },
             handler: async ({ project, game }) => {
@@ -92,8 +113,11 @@ export const schemaToolGroup: ToolGroup = {
                     return textResult({
                         projects: modules.map((m) => ({
                             project: m.project,
-                            classCount: m.items.filter((i) => i.kind === "class").length,
-                            enumCount: m.items.filter((i) => i.kind === "enum").length,
+                            classCount: m.items.filter(
+                                (i) => i.kind === "class",
+                            ).length,
+                            enumCount: m.items.filter((i) => i.kind === "enum")
+                                .length,
                         })),
                     });
                 }
@@ -114,9 +138,18 @@ export const schemaToolGroup: ToolGroup = {
             description:
                 "Search across all schema fields and enum values by substring, exactly like the schema viewer's search bar. Supports the same filters: field name, type, byte offset, enum value, and networked flag.",
             inputSchema: {
-                q: z.string().optional().describe("Substring to match in field/type names."),
-                field: z.string().optional().describe("Filter: field name contains this."),
-                type: z.string().optional().describe("Filter: field type contains this."),
+                q: z
+                    .string()
+                    .optional()
+                    .describe("Substring to match in field/type names."),
+                field: z
+                    .string()
+                    .optional()
+                    .describe("Filter: field name contains this."),
+                type: z
+                    .string()
+                    .optional()
+                    .describe("Filter: field type contains this."),
                 offset: z
                     .string()
                     .optional()
@@ -124,14 +157,19 @@ export const schemaToolGroup: ToolGroup = {
                 enumvalue: z
                     .string()
                     .optional()
-                    .describe("Filter: exact enum member value (decimal or 0x-hex)."),
+                    .describe(
+                        "Filter: exact enum member value (decimal or 0x-hex).",
+                    ),
                 networked: z
                     .boolean()
                     .optional()
                     .describe("Filter: whether the field is networked."),
                 game: gameParam,
             },
-            handler: async ({ q, field, type, offset, enumvalue, networked, game }, ctx) => {
+            handler: async (
+                { q, field, type, offset, enumvalue, networked, game },
+                ctx,
+            ) => {
                 if (!getGame(game)) return errorResult(`Unknown game: ${game}`);
                 const params = new URLSearchParams({ game });
                 if (q) params.set("q", q);
@@ -139,12 +177,26 @@ export const schemaToolGroup: ToolGroup = {
                 if (type) params.set("type", type);
                 if (offset) params.set("offset", offset);
                 if (enumvalue) params.set("enumvalue", enumvalue);
-                if (networked !== undefined) params.set("networked", String(networked));
+                if (networked !== undefined)
+                    params.set("networked", String(networked));
 
                 const data = await fetchJson<SchemaSearchResponse>(
                     `${ctx.baseUrl}/api/schema/search?${params}`,
                 );
-                return textResult(data);
+                return textResult({
+                    classes: data.classes.map((item) => ({
+                        ...item,
+                        url: `${ctx.baseUrl}/schema-viewer/${game}/${encodeURIComponent(item.project)}/${encodeURIComponent(item.name)}`,
+                    })),
+                    fields: data.fields.map((item) => ({
+                        ...item,
+                        url: `${ctx.baseUrl}/schema-viewer/${game}/${encodeURIComponent(item.project)}/${encodeURIComponent(item.className)}#field-${encodeURIComponent(item.fieldName)}`,
+                    })),
+                    enumValues: data.enumValues.map((item) => ({
+                        ...item,
+                        url: `${ctx.baseUrl}/schema-viewer/${game}/${encodeURIComponent(item.project)}/${encodeURIComponent(item.enumName)}`,
+                    })),
+                });
             },
         }),
     ],

@@ -8,7 +8,13 @@ import {
     resolveProtobufType,
 } from "@/lib/protobuf/queries";
 import { toCSharpName } from "@/lib/protobuf/csharp";
-import { capList, errorResult, fetchJson, gameParam, textResult } from "@/lib/mcp/context";
+import {
+    capList,
+    errorResult,
+    fetchJson,
+    gameParam,
+    textResult,
+} from "@/lib/mcp/context";
 import { defineTool, type ToolGroup } from "@/lib/mcp/tools/types";
 import type { ProtobufSearchResult } from "@/app/api/protobuf/search/route";
 
@@ -21,11 +27,17 @@ export const protobufToolGroup: ToolGroup = {
             description:
                 "Resolve a protobuf message or enum by name and return its fields/values plus a link to the protobuf viewer. Accepts either the raw proto name or its C# name (dots replaced with underscores). File is auto-resolved if omitted and the name is unambiguous.",
             inputSchema: {
-                name: z.string().describe("Message or enum name, raw or C#, e.g. CMsgSayText2"),
+                name: z
+                    .string()
+                    .describe(
+                        "Message or enum name, raw or C#, e.g. CMsgSayText2",
+                    ),
                 file: z
                     .string()
                     .optional()
-                    .describe("Proto file name. Auto-resolved if omitted and unambiguous."),
+                    .describe(
+                        "Proto file name. Auto-resolved if omitted and unambiguous.",
+                    ),
                 game: gameParam,
             },
             handler: async ({ name, file, game }, ctx) => {
@@ -62,7 +74,10 @@ export const protobufToolGroup: ToolGroup = {
                         }
                     }
                 } else {
-                    const link = resolveProtobufType(buildProtobufTypeIndex(dump), name);
+                    const link = resolveProtobufType(
+                        buildProtobufTypeIndex(dump),
+                        name,
+                    );
                     if (link) {
                         resolvedFile = link.file;
                     } else {
@@ -79,7 +94,11 @@ export const protobufToolGroup: ToolGroup = {
                     }
                 }
 
-                const found = findProtobufEntry(dump, resolvedFile, resolvedName);
+                const found = findProtobufEntry(
+                    dump,
+                    resolvedFile,
+                    resolvedName,
+                );
                 if (!found) {
                     return errorResult(
                         `No protobuf message or enum named "${name}" found in file "${resolvedFile}".`,
@@ -101,8 +120,14 @@ export const protobufToolGroup: ToolGroup = {
             description:
                 "Browse the protobuf dump. Without filters, returns every module with its message/enum count. With a module, lists the messages/enums in it. With a file, lists the messages/enums declared in that exact file.",
             inputSchema: {
-                module: z.string().optional().describe("Module to list contents for."),
-                file: z.string().optional().describe("Proto file to list contents for."),
+                module: z
+                    .string()
+                    .optional()
+                    .describe("Module to list contents for."),
+                file: z
+                    .string()
+                    .optional()
+                    .describe("Proto file to list contents for."),
                 game: gameParam,
             },
             handler: async ({ module, file, game }) => {
@@ -118,8 +143,14 @@ export const protobufToolGroup: ToolGroup = {
                         file,
                         modules: found.modules,
                         ...capList([
-                            ...found.messages.map((m) => ({ name: m.name, kind: "message" as const })),
-                            ...found.enums.map((e) => ({ name: e.name, kind: "enum" as const })),
+                            ...found.messages.map((m) => ({
+                                name: m.name,
+                                kind: "message" as const,
+                            })),
+                            ...found.enums.map((e) => ({
+                                name: e.name,
+                                kind: "enum" as const,
+                            })),
                         ]),
                     });
                 }
@@ -136,7 +167,10 @@ export const protobufToolGroup: ToolGroup = {
                 }
 
                 return textResult({
-                    modules: modules.map((m) => ({ module: m.module, count: m.items.length })),
+                    modules: modules.map((m) => ({
+                        module: m.module,
+                        count: m.items.length,
+                    })),
                 });
             },
         }),
@@ -147,10 +181,22 @@ export const protobufToolGroup: ToolGroup = {
             description:
                 "Search protobuf messages and enums by substring (or numeric net message id), exactly like the protobuf viewer's search bar. Supports the same filters: kind, file, and module.",
             inputSchema: {
-                q: z.string().optional().describe("Substring or numeric net message id to match."),
-                kind: z.enum(["message", "enum"]).optional().describe("Filter by kind."),
-                file: z.string().optional().describe("Filter: file name contains this."),
-                module: z.string().optional().describe("Filter: exact module name."),
+                q: z
+                    .string()
+                    .optional()
+                    .describe("Substring or numeric net message id to match."),
+                kind: z
+                    .enum(["message", "enum"])
+                    .optional()
+                    .describe("Filter by kind."),
+                file: z
+                    .string()
+                    .optional()
+                    .describe("Filter: file name contains this."),
+                module: z
+                    .string()
+                    .optional()
+                    .describe("Filter: exact module name."),
                 game: gameParam,
             },
             handler: async ({ q, kind, file, module, game }, ctx) => {
@@ -164,7 +210,12 @@ export const protobufToolGroup: ToolGroup = {
                 const data = await fetchJson<ProtobufSearchResult[]>(
                     `${ctx.baseUrl}/api/protobuf/search?${params}`,
                 );
-                return textResult(data);
+                return textResult(
+                    data.map((item) => ({
+                        ...item,
+                        url: `${ctx.baseUrl}/protobuf-viewer/${game}/${encodeURIComponent(item.file)}/${encodeURIComponent(item.name)}${item.matchedField ? `#field-${encodeURIComponent(item.matchedField)}` : ""}`,
+                    })),
+                );
             },
         }),
     ],

@@ -2,7 +2,13 @@ import { z } from "zod";
 import { getGame } from "@/lib/schema/games";
 import { getPanoramaDump } from "@/lib/panorama/dump";
 import { findPanoramaProperty } from "@/lib/panorama/queries";
-import { capList, errorResult, fetchJson, gameParam, textResult } from "@/lib/mcp/context";
+import {
+    capList,
+    errorResult,
+    fetchJson,
+    gameParam,
+    textResult,
+} from "@/lib/mcp/context";
 import { defineTool, type ToolGroup } from "@/lib/mcp/tools/types";
 import type { PanoramaSearchResult } from "@/app/api/panorama/search/route";
 
@@ -15,7 +21,9 @@ export const panoramaToolGroup: ToolGroup = {
             description:
                 "Resolve a Panorama (Source 2 UI) CSS property by name and return its description plus a link to the Panorama viewer.",
             inputSchema: {
-                name: z.string().describe("Panorama property name, e.g. box-shadow"),
+                name: z
+                    .string()
+                    .describe("Panorama property name, e.g. box-shadow"),
                 game: gameParam,
             },
             handler: async ({ name, game }, ctx) => {
@@ -24,7 +32,9 @@ export const panoramaToolGroup: ToolGroup = {
 
                 const found = findPanoramaProperty(dump, name);
                 if (!found) {
-                    return errorResult(`No Panorama property named "${name}" found.`);
+                    return errorResult(
+                        `No Panorama property named "${name}" found.`,
+                    );
                 }
                 return textResult({
                     url: `${ctx.baseUrl}/panorama-viewer/${game}/${encodeURIComponent(found.name)}`,
@@ -36,7 +46,8 @@ export const panoramaToolGroup: ToolGroup = {
         defineTool({
             name: "panorama_list",
             title: "List Panorama CSS properties",
-            description: "List every Panorama CSS property name known for a game.",
+            description:
+                "List every Panorama CSS property name known for a game.",
             inputSchema: {
                 game: gameParam,
             },
@@ -53,7 +64,9 @@ export const panoramaToolGroup: ToolGroup = {
             description:
                 "Search Panorama CSS property names, exactly like the Panorama viewer's search bar.",
             inputSchema: {
-                q: z.string().describe("Substring to match against property names."),
+                q: z
+                    .string()
+                    .describe("Substring to match against property names."),
                 game: gameParam,
             },
             handler: async ({ q, game }, ctx) => {
@@ -63,7 +76,12 @@ export const panoramaToolGroup: ToolGroup = {
                 const data = await fetchJson<PanoramaSearchResult[]>(
                     `${ctx.baseUrl}/api/panorama/search?${params}`,
                 );
-                return textResult(data);
+                return textResult(
+                    data.map((item) => ({
+                        ...item,
+                        url: `${ctx.baseUrl}/panorama-viewer/${game}/${encodeURIComponent(item.name)}`,
+                    })),
+                );
             },
         }),
     ],

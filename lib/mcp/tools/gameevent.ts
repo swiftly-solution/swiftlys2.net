@@ -1,9 +1,18 @@
 import { z } from "zod";
 import { getGame } from "@/lib/schema/games";
 import { getGameEventsDump } from "@/lib/gameevents/dump";
-import { buildGameEventFileIndex, findGameEvent } from "@/lib/gameevents/queries";
+import {
+    buildGameEventFileIndex,
+    findGameEvent,
+} from "@/lib/gameevents/queries";
 import { toEventInterfaceName } from "@/lib/gameevents/csharp";
-import { capList, errorResult, fetchJson, gameParam, textResult } from "@/lib/mcp/context";
+import {
+    capList,
+    errorResult,
+    fetchJson,
+    gameParam,
+    textResult,
+} from "@/lib/mcp/context";
 import { defineTool, type ToolGroup } from "@/lib/mcp/tools/types";
 import type { GameEventSearchResult } from "@/app/api/gameevents/search/route";
 
@@ -18,7 +27,9 @@ export const gameEventToolGroup: ToolGroup = {
             inputSchema: {
                 name: z
                     .string()
-                    .describe("Game event name, raw (player_death) or C# (EventPlayerDeath)"),
+                    .describe(
+                        "Game event name, raw (player_death) or C# (EventPlayerDeath)",
+                    ),
                 game: gameParam,
             },
             handler: async ({ name, game }, ctx) => {
@@ -28,7 +39,9 @@ export const gameEventToolGroup: ToolGroup = {
                 const found =
                     findGameEvent(dump, name) ??
                     dump.events.find(
-                        (e) => toEventInterfaceName(e.name).toLowerCase() === name.toLowerCase(),
+                        (e) =>
+                            toEventInterfaceName(e.name).toLowerCase() ===
+                            name.toLowerCase(),
                     ) ??
                     null;
                 if (!found) {
@@ -47,7 +60,10 @@ export const gameEventToolGroup: ToolGroup = {
             description:
                 "Browse the game events dump. Without a file, returns every gameevents file with its event count. With a file, lists the events declared in it.",
             inputSchema: {
-                file: z.string().optional().describe("Gameevents file to list events for."),
+                file: z
+                    .string()
+                    .optional()
+                    .describe("Gameevents file to list events for."),
                 game: gameParam,
             },
             handler: async ({ file, game }) => {
@@ -57,7 +73,10 @@ export const gameEventToolGroup: ToolGroup = {
 
                 if (!file) {
                     return textResult({
-                        files: files.map((f) => ({ file: f.file, count: f.items.length })),
+                        files: files.map((f) => ({
+                            file: f.file,
+                            count: f.items.length,
+                        })),
                     });
                 }
 
@@ -77,9 +96,18 @@ export const gameEventToolGroup: ToolGroup = {
             description:
                 "Search game events by name, field name, or hex hash, exactly like the game events viewer's search bar.",
             inputSchema: {
-                q: z.string().optional().describe("Substring or hex hash to match."),
-                field: z.string().optional().describe("Filter: event has a field matching this."),
-                file: z.string().optional().describe("Filter: event is declared in this file."),
+                q: z
+                    .string()
+                    .optional()
+                    .describe("Substring or hex hash to match."),
+                field: z
+                    .string()
+                    .optional()
+                    .describe("Filter: event has a field matching this."),
+                file: z
+                    .string()
+                    .optional()
+                    .describe("Filter: event is declared in this file."),
                 game: gameParam,
             },
             handler: async ({ q, field, file, game }, ctx) => {
@@ -92,7 +120,12 @@ export const gameEventToolGroup: ToolGroup = {
                 const data = await fetchJson<GameEventSearchResult[]>(
                     `${ctx.baseUrl}/api/gameevents/search?${params}`,
                 );
-                return textResult(data);
+                return textResult(
+                    data.map((item) => ({
+                        ...item,
+                        url: `${ctx.baseUrl}/gameevents-viewer/${game}/${encodeURIComponent(item.name)}`,
+                    })),
+                );
             },
         }),
     ],

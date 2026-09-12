@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { getApiDump } from "@/lib/api-docs/dump";
-import { apiDocsHref, buildNavTree, findType, isApiBranch } from "@/lib/api-docs/tree";
+import {
+    apiDocsHref,
+    buildNavTree,
+    findType,
+    isApiBranch,
+} from "@/lib/api-docs/tree";
 import { errorResult, fetchJson, textResult } from "@/lib/mcp/context";
 import { defineTool, type ToolGroup } from "@/lib/mcp/tools/types";
 import type { ApiDocsSearchResult } from "@/app/api/api-docs/search/route";
@@ -13,7 +18,10 @@ const MEMBER_LISTS = [
     "fields",
 ] as const;
 
-const branchParam = z.enum(["stable", "beta"]).default("stable").describe("API docs branch.");
+const branchParam = z
+    .enum(["stable", "beta"])
+    .default("stable")
+    .describe("API docs branch.");
 
 export const apiDocsToolGroup: ToolGroup = {
     domain: "API docs",
@@ -24,11 +32,15 @@ export const apiDocsToolGroup: ToolGroup = {
             description:
                 "Resolve a SwiftlyS2 C# API type by exact name (e.g. IPlayerManagerService) and return its declaration/members plus a link to the API docs. Optionally narrow to a single member (method/property/field).",
             inputSchema: {
-                name: z.string().describe("Type name, e.g. IPlayerManagerService"),
+                name: z
+                    .string()
+                    .describe("Type name, e.g. IPlayerManagerService"),
                 member: z
                     .string()
                     .optional()
-                    .describe("Member name to narrow the result to, e.g. SendCenterHTML"),
+                    .describe(
+                        "Member name to narrow the result to, e.g. SendCenterHTML",
+                    ),
                 branch: branchParam,
             },
             handler: async ({ name, member, branch }, ctx) => {
@@ -43,8 +55,11 @@ export const apiDocsToolGroup: ToolGroup = {
                     if (!found) break;
 
                     if (member) {
-                        const memberEntry = MEMBER_LISTS.flatMap((key) => found.type[key] ?? []).find(
-                            (m) => m.name.toLowerCase() === member.toLowerCase(),
+                        const memberEntry = MEMBER_LISTS.flatMap(
+                            (key) => found.type[key] ?? [],
+                        ).find(
+                            (m) =>
+                                m.name.toLowerCase() === member.toLowerCase(),
                         );
                         if (!memberEntry) {
                             return errorResult(
@@ -68,7 +83,9 @@ export const apiDocsToolGroup: ToolGroup = {
                     });
                 }
 
-                return errorResult(`No API type named "${name}" found on branch "${resolvedBranch}".`);
+                return errorResult(
+                    `No API type named "${name}" found on branch "${resolvedBranch}".`,
+                );
             },
         }),
 
@@ -78,7 +95,10 @@ export const apiDocsToolGroup: ToolGroup = {
             description:
                 "Browse the SwiftlyS2 C# API docs. Without a category, returns every category with its types. With a category, returns just the types in it.",
             inputSchema: {
-                category: z.string().optional().describe("Category slug to list types for."),
+                category: z
+                    .string()
+                    .optional()
+                    .describe("Category slug to list types for."),
                 branch: branchParam,
             },
             handler: async ({ category, branch }) => {
@@ -112,16 +132,28 @@ export const apiDocsToolGroup: ToolGroup = {
             description:
                 "Search API type names, member names, and summaries by substring, exactly like the API docs search bar.",
             inputSchema: {
-                q: z.string().describe("Substring to match in type/member names or summaries."),
+                q: z
+                    .string()
+                    .describe(
+                        "Substring to match in type/member names or summaries.",
+                    ),
                 branch: branchParam,
             },
             handler: async ({ q, branch }, ctx) => {
                 const resolvedBranch = isApiBranch(branch) ? branch : "stable";
-                const params = new URLSearchParams({ q, branch: resolvedBranch });
+                const params = new URLSearchParams({
+                    q,
+                    branch: resolvedBranch,
+                });
                 const data = await fetchJson<ApiDocsSearchResult[]>(
                     `${ctx.baseUrl}/api/api-docs/search?${params}`,
                 );
-                return textResult(data);
+                return textResult(
+                    data.map((item) => ({
+                        ...item,
+                        url: `${ctx.baseUrl}${apiDocsHref(resolvedBranch, item.categorySlug, item.typeSlug)}${item.anchor ? `#${item.anchor}` : ""}`,
+                    })),
+                );
             },
         }),
     ],

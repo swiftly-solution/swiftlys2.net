@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { getGame } from "@/lib/schema/games";
-import { errorResult, fetchJson, gameParam, textResult } from "@/lib/mcp/context";
+import {
+    errorResult,
+    fetchJson,
+    gameParam,
+    textResult,
+} from "@/lib/mcp/context";
 import { defineTool, type ToolGroup } from "@/lib/mcp/tools/types";
 import type { GlobalSearchResponse } from "@/lib/search/query";
 
@@ -13,7 +18,9 @@ export const siteToolGroup: ToolGroup = {
             description:
                 "Search across everything at once - schema, entities, protobuf, game events, convars, docs, and API docs - exactly like the site's top search bar. Use this when you don't know which specific tool to reach for, then follow up with the matching *_lookup tool for full detail.",
             inputSchema: {
-                q: z.string().describe("Substring to match across every source."),
+                q: z
+                    .string()
+                    .describe("Substring to match across every source."),
                 game: gameParam,
             },
             handler: async ({ q, game }, ctx) => {
@@ -24,9 +31,9 @@ export const siteToolGroup: ToolGroup = {
                 );
                 const groups = data.groups.map((g) => ({
                     ...g,
-                    items: g.items.map((item) => ({
+                    items: g.items.map(({ href, ...item }) => ({
                         ...item,
-                        href: `${ctx.baseUrl}${item.href}`,
+                        url: `${ctx.baseUrl}${href}`,
                     })),
                 }));
                 return textResult({ groups });

@@ -3,7 +3,13 @@ import { getGame } from "@/lib/schema/games";
 import { getEntitiesDump } from "@/lib/entities/dump";
 import { buildEntityIndex, findEntityEntry } from "@/lib/entities/queries";
 import { toInterfaceName } from "@/lib/schema/codegen/csharp";
-import { capList, errorResult, fetchJson, gameParam, textResult } from "@/lib/mcp/context";
+import {
+    capList,
+    errorResult,
+    fetchJson,
+    gameParam,
+    textResult,
+} from "@/lib/mcp/context";
 import { defineTool, type ToolGroup } from "@/lib/mcp/tools/types";
 import type { EntitySearchResponse } from "@/app/api/entities/search/route";
 
@@ -18,7 +24,9 @@ export const entityToolGroup: ToolGroup = {
             inputSchema: {
                 className: z
                     .string()
-                    .describe("Entity class name, raw (CCSPlayerPawn) or C# interface name"),
+                    .describe(
+                        "Entity class name, raw (CCSPlayerPawn) or C# interface name",
+                    ),
                 game: gameParam,
             },
             handler: async ({ className, game }, ctx) => {
@@ -30,7 +38,9 @@ export const entityToolGroup: ToolGroup = {
                 if (!found) {
                     const lower = className.toLowerCase();
                     const match = dump.datamaps.find(
-                        (dm) => toInterfaceName(dm.class_name).toLowerCase() === lower,
+                        (dm) =>
+                            toInterfaceName(dm.class_name).toLowerCase() ===
+                            lower,
                     );
                     if (match) {
                         resolvedClassName = match.class_name;
@@ -38,7 +48,9 @@ export const entityToolGroup: ToolGroup = {
                     }
                 }
                 if (!found) {
-                    return errorResult(`No entity class named "${className}" found.`);
+                    return errorResult(
+                        `No entity class named "${className}" found.`,
+                    );
                 }
                 return textResult({
                     url: `${ctx.baseUrl}/entity-viewer/${game}/${encodeURIComponent(resolvedClassName)}`,
@@ -57,7 +69,9 @@ export const entityToolGroup: ToolGroup = {
                 prefix: z
                     .string()
                     .optional()
-                    .describe("Case-insensitive prefix to filter class names by."),
+                    .describe(
+                        "Case-insensitive prefix to filter class names by.",
+                    ),
                 game: gameParam,
             },
             handler: async ({ prefix, game }) => {
@@ -65,7 +79,9 @@ export const entityToolGroup: ToolGroup = {
                 const dump = await getEntitiesDump(game);
                 const names = buildEntityIndex(dump).map((e) => e.name);
                 const filtered = prefix
-                    ? names.filter((n) => n.toLowerCase().startsWith(prefix.toLowerCase()))
+                    ? names.filter((n) =>
+                          n.toLowerCase().startsWith(prefix.toLowerCase()),
+                      )
                     : names;
                 return textResult(capList(filtered));
             },
@@ -77,12 +93,18 @@ export const entityToolGroup: ToolGroup = {
             description:
                 "Search entity classes and their input/output/member datamap fields by substring, exactly like the entity viewer's search bar.",
             inputSchema: {
-                q: z.string().optional().describe("Substring to match in class or field names."),
+                q: z
+                    .string()
+                    .optional()
+                    .describe("Substring to match in class or field names."),
                 kind: z
                     .enum(["input", "output", "member"])
                     .optional()
                     .describe("Filter datamap field matches to this kind."),
-                field: z.string().optional().describe("Filter: field name contains this."),
+                field: z
+                    .string()
+                    .optional()
+                    .describe("Filter: field name contains this."),
                 game: gameParam,
             },
             handler: async ({ q, kind, field, game }, ctx) => {
@@ -95,7 +117,16 @@ export const entityToolGroup: ToolGroup = {
                 const data = await fetchJson<EntitySearchResponse>(
                     `${ctx.baseUrl}/api/entities/search?${params}`,
                 );
-                return textResult(data);
+                return textResult({
+                    classes: data.classes.map((name) => ({
+                        name,
+                        url: `${ctx.baseUrl}/entity-viewer/${game}/${encodeURIComponent(name)}`,
+                    })),
+                    fields: data.fields.map((item) => ({
+                        ...item,
+                        url: `${ctx.baseUrl}/entity-viewer/${game}/${encodeURIComponent(item.className)}#${item.kind}-${encodeURIComponent(item.kind === "member" ? item.fieldName : item.externalName)}`,
+                    })),
+                });
             },
         }),
     ],

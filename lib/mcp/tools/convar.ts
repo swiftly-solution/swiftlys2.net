@@ -1,8 +1,16 @@
 import { z } from "zod";
 import { getGame } from "@/lib/schema/games";
 import { getConvarsDump } from "@/lib/convars/dump";
-import { buildConvarsModuleIndex, findConvarsEntry } from "@/lib/convars/queries";
-import { ATTR_KEYS, matchesFilters, type FilterFacet, type Filters } from "@/lib/convars/filter";
+import {
+    buildConvarsModuleIndex,
+    findConvarsEntry,
+} from "@/lib/convars/queries";
+import {
+    ATTR_KEYS,
+    matchesFilters,
+    type FilterFacet,
+    type Filters,
+} from "@/lib/convars/filter";
 import { capList, errorResult, gameParam, textResult } from "@/lib/mcp/context";
 import { defineTool, type ToolGroup } from "@/lib/mcp/tools/types";
 
@@ -22,11 +30,15 @@ export const convarToolGroup: ToolGroup = {
             description:
                 "Resolve a console variable or console command by exact name (e.g. sv_cheats) and return its flags/description plus a link to the convars viewer. Module is auto-resolved if omitted.",
             inputSchema: {
-                name: z.string().describe("ConVar or ConCommand name, e.g. sv_cheats"),
+                name: z
+                    .string()
+                    .describe("ConVar or ConCommand name, e.g. sv_cheats"),
                 module: z
                     .string()
                     .optional()
-                    .describe("Module the entry belongs to. Auto-resolved if omitted."),
+                    .describe(
+                        "Module the entry belongs to. Auto-resolved if omitted.",
+                    ),
                 game: gameParam,
             },
             handler: async ({ name, module, game }, ctx) => {
@@ -39,7 +51,9 @@ export const convarToolGroup: ToolGroup = {
                         dump.convars.find((c) => c.name === name) ??
                         dump.commands.find((c) => c.name === name);
                     if (!entry) {
-                        return errorResult(`No convar or concommand named "${name}" found.`);
+                        return errorResult(
+                            `No convar or concommand named "${name}" found.`,
+                        );
                     }
                     resolvedModule = entry.module;
                 }
@@ -66,7 +80,10 @@ export const convarToolGroup: ToolGroup = {
             description:
                 "Browse the convars dump. Without a module, returns every module with its entry count. With a module, lists the convars/concommands in it.",
             inputSchema: {
-                module: z.string().optional().describe("Module to list entries for."),
+                module: z
+                    .string()
+                    .optional()
+                    .describe("Module to list entries for."),
                 game: gameParam,
             },
             handler: async ({ module, game }) => {
@@ -76,7 +93,10 @@ export const convarToolGroup: ToolGroup = {
 
                 if (!module) {
                     return textResult({
-                        modules: modules.map((m) => ({ module: m.module, count: m.items.length })),
+                        modules: modules.map((m) => ({
+                            module: m.module,
+                            count: m.items.length,
+                        })),
                     });
                 }
 
@@ -96,18 +116,31 @@ export const convarToolGroup: ToolGroup = {
             description:
                 "Search convars and concommands exactly like the convars viewer's filter panel: substring on name, kind, and include/exclude tag filters on module, engine flag (lowercase, e.g. cheat, replicated, notify), and attribute (has_default, has_min, has_max, has_callback, has_completion_callback).",
             inputSchema: {
-                q: z.string().optional().describe("Substring to match in the name."),
+                q: z
+                    .string()
+                    .optional()
+                    .describe("Substring to match in the name."),
                 kind: z.enum(["all", "convar", "concommand"]).default("all"),
-                modulesInclude: z.array(z.string()).optional().describe("Only these modules."),
-                modulesExclude: z.array(z.string()).optional().describe("Exclude these modules."),
+                modulesInclude: z
+                    .array(z.string())
+                    .optional()
+                    .describe("Only these modules."),
+                modulesExclude: z
+                    .array(z.string())
+                    .optional()
+                    .describe("Exclude these modules."),
                 flagsInclude: z
                     .array(z.string())
                     .optional()
-                    .describe("Only entries with all of these engine flags, e.g. cheat."),
+                    .describe(
+                        "Only entries with all of these engine flags, e.g. cheat.",
+                    ),
                 flagsExclude: z
                     .array(z.string())
                     .optional()
-                    .describe("Exclude entries with any of these engine flags."),
+                    .describe(
+                        "Exclude entries with any of these engine flags.",
+                    ),
                 attrsInclude: z
                     .array(z.enum(ATTR_KEYS))
                     .optional()
@@ -118,17 +151,20 @@ export const convarToolGroup: ToolGroup = {
                     .describe("Exclude entries with any of these attributes."),
                 game: gameParam,
             },
-            handler: async ({
-                q,
-                kind,
-                modulesInclude,
-                modulesExclude,
-                flagsInclude,
-                flagsExclude,
-                attrsInclude,
-                attrsExclude,
-                game,
-            }) => {
+            handler: async (
+                {
+                    q,
+                    kind,
+                    modulesInclude,
+                    modulesExclude,
+                    flagsInclude,
+                    flagsExclude,
+                    attrsInclude,
+                    attrsExclude,
+                    game,
+                },
+                ctx,
+            ) => {
                 if (!getGame(game)) return errorResult(`Unknown game: ${game}`);
                 const dump = await getConvarsDump(game);
                 const modules = buildConvarsModuleIndex(dump);
@@ -147,15 +183,31 @@ export const convarToolGroup: ToolGroup = {
                     kind: "convar" | "concommand";
                     flags: string[];
                     attrs: string[];
+                    url: string;
                 }[] = [];
 
                 for (const mod of modules) {
                     for (const item of mod.items) {
-                        if (qLower && !item.name.toLowerCase().includes(qLower)) continue;
-                        if (!matchesFilters({ kind: item.kind, module: mod.module, flags: item.flags, attrs: item.attrs }, filters)) {
+                        if (qLower && !item.name.toLowerCase().includes(qLower))
+                            continue;
+                        if (
+                            !matchesFilters(
+                                {
+                                    kind: item.kind,
+                                    module: mod.module,
+                                    flags: item.flags,
+                                    attrs: item.attrs,
+                                },
+                                filters,
+                            )
+                        ) {
                             continue;
                         }
-                        results.push({ module: mod.module, ...item });
+                        results.push({
+                            module: mod.module,
+                            ...item,
+                            url: `${ctx.baseUrl}/convars-viewer/${game}/${encodeURIComponent(mod.module)}/${encodeURIComponent(item.name)}`,
+                        });
                     }
                 }
 
