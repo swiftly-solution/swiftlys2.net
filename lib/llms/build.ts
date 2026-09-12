@@ -1,20 +1,11 @@
 import { REPO_URL } from "@/lib/github";
 import { getDocPageSource } from "@/lib/docs/dump";
 import { docHref, listDocPages } from "@/lib/docs/pages";
+import { TOOL_GROUPS } from "@/lib/mcp/tools";
 
 const DISCORD_URL = "https://swiftlys2.net/discord";
 
-const MCP_TOOLS = [
-    "schema_lookup", "schema_list", "schema_search",
-    "entity_lookup", "entity_list", "entity_search",
-    "protobuf_lookup", "protobuf_list", "protobuf_search",
-    "gameevent_lookup", "gameevent_list", "gameevent_search",
-    "convar_lookup", "convar_list", "convar_search",
-    "panorama_lookup", "panorama_list", "panorama_search",
-    "apidocs_lookup", "apidocs_list", "apidocs_search",
-    "docs_list", "docs_search",
-    "site_search",
-];
+const MCP_TOOLS = TOOL_GROUPS.flatMap((group) => group.tools.map((tool) => tool.name));
 
 export async function buildLlmsTxt(baseUrl: string): Promise<string> {
     const lines: string[] = [];

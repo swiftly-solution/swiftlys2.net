@@ -1,14 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { McpContext } from "@/lib/mcp/context";
-import { registerSchemaTools } from "@/lib/mcp/tools/schema";
-import { registerEntityTools } from "@/lib/mcp/tools/entity";
-import { registerProtobufTools } from "@/lib/mcp/tools/protobuf";
-import { registerGameEventTools } from "@/lib/mcp/tools/gameevent";
-import { registerConvarTools } from "@/lib/mcp/tools/convar";
-import { registerPanoramaTools } from "@/lib/mcp/tools/panorama";
-import { registerApiDocsTools } from "@/lib/mcp/tools/apidocs";
-import { registerDocsTools } from "@/lib/mcp/tools/docs";
-import { registerSiteTools } from "@/lib/mcp/tools/site";
+import { TOOL_GROUPS } from "@/lib/mcp/tools";
 
 export function createMcpServer(baseUrl: string): McpServer {
     const server = new McpServer({
@@ -18,15 +10,19 @@ export function createMcpServer(baseUrl: string): McpServer {
 
     const ctx: McpContext = { baseUrl };
 
-    registerSchemaTools(server, ctx);
-    registerEntityTools(server, ctx);
-    registerProtobufTools(server, ctx);
-    registerGameEventTools(server, ctx);
-    registerConvarTools(server, ctx);
-    registerPanoramaTools(server, ctx);
-    registerApiDocsTools(server, ctx);
-    registerDocsTools(server, ctx);
-    registerSiteTools(server, ctx);
+    for (const group of TOOL_GROUPS) {
+        for (const tool of group.tools) {
+            server.registerTool(
+                tool.name,
+                {
+                    title: tool.title,
+                    description: tool.description,
+                    inputSchema: tool.inputSchema,
+                },
+                (args) => tool.handler(args, ctx),
+            );
+        }
+    }
 
     return server;
 }

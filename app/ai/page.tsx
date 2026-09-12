@@ -1,69 +1,52 @@
 import { Bot, FileText, Wrench } from "lucide-react";
 import { getBaseUrl } from "@/lib/base-url";
 import { CopyBlock } from "@/components/ai/copy-block";
+import { TOOL_GROUPS } from "@/lib/mcp/tools";
+import { describeToolInput, type ToolDef } from "@/lib/mcp/tools/types";
 
 const CARD_CLASS = "rounded-2xl border border-white/10 bg-zinc-950/40 p-6";
 
-const DOMAINS = [
-    {
-        domain: "Schema",
-        tools: [
-            { name: "schema_lookup", desc: "Exact class/enum by name -> fields + link." },
-            { name: "schema_list", desc: "Browse projects, or list a project's classes/enums." },
-            { name: "schema_search", desc: "Search fields by name, type, offset, networked." },
-        ],
-    },
-    {
-        domain: "Entities",
-        tools: [
-            { name: "entity_lookup", desc: "Exact entity class by name -> datamap + link." },
-            { name: "entity_list", desc: "List entity class names, optionally by prefix." },
-            { name: "entity_search", desc: "Search classes and input/output/member fields." },
-        ],
-    },
-    {
-        domain: "Protobuf",
-        tools: [
-            { name: "protobuf_lookup", desc: "Exact message/enum by name -> fields + link." },
-            { name: "protobuf_list", desc: "Browse modules/files, or list one's contents." },
-            { name: "protobuf_search", desc: "Search by name, net message id, kind, file." },
-        ],
-    },
-    {
-        domain: "Game events",
-        tools: [
-            { name: "gameevent_lookup", desc: "Exact event by name -> fields + link." },
-            { name: "gameevent_list", desc: "Browse gameevents files, or list one's events." },
-            { name: "gameevent_search", desc: "Search by name, field name, or hex hash." },
-        ],
-    },
-    {
-        domain: "ConVars",
-        tools: [
-            { name: "convar_lookup", desc: "Exact convar/concommand by name -> flags + link." },
-            { name: "convar_list", desc: "Browse modules, or list one's entries." },
-            {
-                name: "convar_search",
-                desc: "Full tag search: kind + include/exclude module, flag, attribute.",
-            },
-        ],
-    },
-    {
-        domain: "API docs",
-        tools: [
-            { name: "apidocs_lookup", desc: "Exact type (or member) by name -> declaration + link." },
-            { name: "apidocs_list", desc: "Browse categories, or list one's types." },
-            { name: "apidocs_search", desc: "Search type/member names and summaries." },
-        ],
-    },
-    {
-        domain: "Docs",
-        tools: [
-            { name: "docs_list", desc: "List every docs page with its title and URL." },
-            { name: "docs_search", desc: "Search page bodies and headings for a snippet." },
-        ],
-    },
-];
+function ToolCard({ tool }: { tool: ToolDef }) {
+    const params = describeToolInput(tool.inputSchema);
+
+    return (
+        <div>
+            <code className="font-mono text-xs text-accent">{tool.name}</code>
+            <p className="text-xs text-zinc-400">{tool.description}</p>
+
+            {params.length > 0 && (
+                <div className="mt-1.5 space-y-1 border-l border-white/10 pl-3">
+                    {params.map((p) => (
+                        <div
+                            key={p.name}
+                            className="flex flex-wrap items-baseline gap-x-1.5 font-mono text-[11px]"
+                        >
+                            <span className="text-zinc-300">{p.name}</span>
+                            <span className="text-zinc-600">
+                                {p.enumValues
+                                    ? `enum(${p.enumValues.join("|")})`
+                                    : p.type}
+                            </span>
+                            {!p.required && (
+                                <span className="text-zinc-600">optional</span>
+                            )}
+                            {p.default !== undefined && (
+                                <span className="text-zinc-600">
+                                    default: {JSON.stringify(p.default)}
+                                </span>
+                            )}
+                            {p.description && (
+                                <span className="basis-full text-zinc-500">
+                                    {p.description}
+                                </span>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
 export default async function AiPage() {
     const baseUrl = await getBaseUrl();
@@ -81,6 +64,10 @@ export default async function AiPage() {
         4,
     );
 
+    const siteSearchTool = TOOL_GROUPS.find((g) => g.domain === "Site")
+        ?.tools[0];
+    const domainGroups = TOOL_GROUPS.filter((g) => g.domain !== "Site");
+
     return (
         <div className="mx-auto max-w-5xl px-6 py-16">
             <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wide text-accent">
@@ -92,8 +79,9 @@ export default async function AiPage() {
             </h1>
             <p className="mt-4 max-w-2xl text-zinc-400">
                 SwiftlyS2 exposes its schema, entity, protobuf, game event, convar,
-                and API docs data to AI agents - so your coding assistant can look
-                up the exact field, flag, or method it needs instead of guessing.
+                Panorama, and API docs data to AI agents - so your coding assistant
+                can look up the exact field, flag, or method it needs instead of
+                guessing.
             </p>
 
             <section className="mt-10">
@@ -129,39 +117,39 @@ export default async function AiPage() {
                     Every domain gets the same three shapes: <code className="text-accent">*_lookup</code>{" "}
                     for an exact name, <code className="text-accent">*_list</code> to browse without
                     knowing a name yet, and <code className="text-accent">*_search</code> - the same
-                    engine behind that domain&apos;s search bar, filters and all.
+                    engine behind that domain&apos;s search bar, filters and all. Each
+                    tool below is generated straight from its MCP registration, so
+                    the parameters shown always match what the server accepts.
                 </p>
 
-                <div className={`${CARD_CLASS} mt-4 border-accent/30 bg-accent/5`}>
-                    <div className="flex items-center justify-between gap-3">
-                        <code className="font-mono text-sm text-accent">site_search</code>
-                        <span className="rounded-full border border-accent/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-accent">
-                            searches everything
-                        </span>
+                {siteSearchTool && (
+                    <div className={`${CARD_CLASS} mt-4 border-accent/30 bg-accent/5`}>
+                        <div className="flex items-center justify-between gap-3">
+                            <code className="font-mono text-sm text-accent">
+                                {siteSearchTool.name}
+                            </code>
+                            <span className="rounded-full border border-accent/30 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-accent">
+                                searches everything
+                            </span>
+                        </div>
+                        <p className="mt-2 text-sm text-zinc-400">
+                            {siteSearchTool.description}
+                        </p>
+                        <div className="mt-3">
+                            <ToolCard tool={siteSearchTool} />
+                        </div>
                     </div>
-                    <p className="mt-2 text-sm text-zinc-400">
-                        One call across schema, entities, protobuf, game events,
-                        convars, and docs at once - exactly like the{" "}
-                        <span className="text-accent">site:</span> prefix in the
-                        site&apos;s own search bar. Start here when you don&apos;t
-                        know which domain to reach for.
-                    </p>
-                </div>
+                )}
 
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
-                    {DOMAINS.map((group) => (
+                    {domainGroups.map((group) => (
                         <div key={group.domain} className={CARD_CLASS}>
                             <div className="font-mono text-sm font-semibold text-white">
                                 {group.domain}
                             </div>
-                            <div className="mt-3 space-y-2.5">
+                            <div className="mt-3 space-y-3">
                                 {group.tools.map((tool) => (
-                                    <div key={tool.name}>
-                                        <code className="font-mono text-xs text-accent">
-                                            {tool.name}
-                                        </code>
-                                        <p className="text-xs text-zinc-400">{tool.desc}</p>
-                                    </div>
+                                    <ToolCard key={tool.name} tool={tool} />
                                 ))}
                             </div>
                         </div>
