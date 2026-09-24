@@ -5,7 +5,9 @@ import type {
     DatamapDiff,
     EntitiesDiff,
     EntityClassDiff,
-    FieldDiffEntry,
+    InputDiffEntry,
+    MemberDiffEntry,
+    OutputDiffEntry,
 } from "@/lib/entities/diff";
 
 const CHANGE_STYLES: Record<
@@ -95,38 +97,75 @@ function EntityClassCard({ entry }: { entry: EntityClassDiff }) {
     );
 }
 
-function FieldDiffRow({
-    entry,
-    showType,
-}: {
-    entry: FieldDiffEntry;
-    showType: boolean;
-}) {
+function MemberDiffRow({ entry }: { entry: MemberDiffEntry }) {
     const style = CHANGE_STYLES[entry.change];
     const shown = (entry.after ?? entry.before)!;
 
     return (
         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm">
             <span className={`h-2 w-2 shrink-0 rounded-full ${style.dot}`} />
-            <span className="font-semibold text-white">
-                {shown.externalName}
-            </span>
-            {showType && entry.change === "added" && entry.after && (
-                <span className="text-zinc-400">{entry.after.fieldType}</span>
+            <span className="font-semibold text-white">{shown.name}</span>
+            {entry.change === "added" && entry.after && (
+                <span className="text-zinc-400">{entry.after.type}</span>
             )}
-            {showType && entry.change === "removed" && entry.before && (
-                <span className="text-zinc-400">{entry.before.fieldType}</span>
+            {entry.change === "removed" && entry.before && (
+                <span className="text-zinc-400">{entry.before.type}</span>
             )}
-            {showType &&
-                entry.change === "changed" &&
-                entry.before &&
-                entry.after && (
-                    <span className="text-zinc-400">
-                        {entry.before.fieldType}{" "}
-                        <span className="text-zinc-600">&rarr;</span>{" "}
-                        {entry.after.fieldType}
+            {entry.change === "changed" && entry.before && entry.after && (
+                <span className="text-zinc-400">
+                    {entry.before.type}{" "}
+                    <span className="text-zinc-600">&rarr;</span>{" "}
+                    {entry.after.type}
+                </span>
+            )}
+        </div>
+    );
+}
+
+function OutputDiffRow({ entry }: { entry: OutputDiffEntry }) {
+    const style = CHANGE_STYLES[entry.change];
+    const shown = (entry.after ?? entry.before)!;
+
+    return (
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm">
+            <span className={`h-2 w-2 shrink-0 rounded-full ${style.dot}`} />
+            <span className="font-semibold text-white">{shown.name}</span>
+        </div>
+    );
+}
+
+function InputSignature({ input }: { input: InputDiffEntry["before"] }) {
+    if (!input) return null;
+    return (
+        <span className="text-zinc-400">
+            ({input.parameter_types.join(", ")}){" "}
+            <span className="text-zinc-600">-&gt;</span> {input.return_type}
+        </span>
+    );
+}
+
+function InputDiffRow({ entry }: { entry: InputDiffEntry }) {
+    const style = CHANGE_STYLES[entry.change];
+    const shown = (entry.after ?? entry.before)!;
+
+    return (
+        <div className="flex flex-col gap-1 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm">
+            <div className="flex flex-wrap items-center gap-2">
+                <span className={`h-2 w-2 shrink-0 rounded-full ${style.dot}`} />
+                <span className="font-semibold text-white">{shown.name}</span>
+                {entry.change === "changed" && entry.before && entry.after ? (
+                    <span className="flex flex-wrap items-center gap-1.5">
+                        <InputSignature input={entry.before} />
+                        <span className="text-zinc-600">&rarr;</span>
+                        <InputSignature input={entry.after} />
                     </span>
+                ) : (
+                    <InputSignature input={shown} />
                 )}
+            </div>
+            <div className="pl-4 font-mono text-xs text-zinc-500">
+                raw: {shown.raw_name}
+            </div>
         </div>
     );
 }
@@ -159,11 +198,7 @@ function DatamapCard({ entry }: { entry: DatamapDiff }) {
                             </div>
                             <div className="mt-2 space-y-1.5">
                                 {entry.memberDiffs.map((f) => (
-                                    <FieldDiffRow
-                                        key={f.fieldName}
-                                        entry={f}
-                                        showType
-                                    />
+                                    <MemberDiffRow key={f.key} entry={f} />
                                 ))}
                             </div>
                         </div>
@@ -175,11 +210,7 @@ function DatamapCard({ entry }: { entry: DatamapDiff }) {
                             </div>
                             <div className="mt-2 space-y-1.5">
                                 {entry.inputDiffs.map((f) => (
-                                    <FieldDiffRow
-                                        key={f.fieldName}
-                                        entry={f}
-                                        showType
-                                    />
+                                    <InputDiffRow key={f.key} entry={f} />
                                 ))}
                             </div>
                         </div>
@@ -191,11 +222,7 @@ function DatamapCard({ entry }: { entry: DatamapDiff }) {
                             </div>
                             <div className="mt-2 space-y-1.5">
                                 {entry.outputDiffs.map((f) => (
-                                    <FieldDiffRow
-                                        key={f.fieldName}
-                                        entry={f}
-                                        showType={false}
-                                    />
+                                    <OutputDiffRow key={f.key} entry={f} />
                                 ))}
                             </div>
                         </div>

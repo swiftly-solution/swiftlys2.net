@@ -126,17 +126,17 @@ export function EntityDetail({
                         <div className="mt-2 space-y-1.5">
                             {data.members.map((member) => (
                                 <div
-                                    key={member.externalName}
-                                    id={`member-${member.fieldName}`}
+                                    key={member.schemaName}
+                                    id={`member-${member.schemaName}`}
                                     className="flex scroll-mt-24 flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm [&:target]:border-accent/50"
                                 >
                                     <div className="flex flex-wrap items-center gap-1.5">
                                         <span className="font-semibold text-white">
-                                            {member.externalName}
+                                            {member.name}
                                         </span>
                                         <span className="text-zinc-600">:</span>
                                         <span className="text-zinc-400">
-                                            {member.fieldType}
+                                            {member.type}
                                         </span>
                                     </div>
                                     <div className="shrink-0 font-mono text-xs">
@@ -149,11 +149,11 @@ export function EntityDetail({
                                             schemaProject={
                                                 member.schemaProject ?? null
                                             }
-                                            fieldName={member.fieldName}
+                                            fieldName={member.schemaName}
                                             label={
                                                 isCsharp
                                                     ? member.csharpFieldName
-                                                    : member.fieldName
+                                                    : member.schemaName
                                             }
                                         />
                                     </div>
@@ -171,17 +171,33 @@ export function EntityDetail({
                         <div className="mt-2 space-y-1.5">
                             {data.inputs.map((input) => (
                                 <div
-                                    key={input.externalName}
-                                    id={`input-${input.externalName}`}
-                                    className="flex scroll-mt-24 flex-wrap items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm [&:target]:border-accent/50"
+                                    key={input.rawName}
+                                    id={`input-${input.rawName}`}
+                                    className="flex scroll-mt-24 flex-col items-start gap-1 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm [&:target]:border-accent/50"
                                 >
-                                    <span className="font-semibold text-white">
-                                        {input.externalName}
-                                    </span>
-                                    <span className="text-zinc-600">:</span>
-                                    <span className="text-zinc-400">
-                                        {input.fieldType}
-                                    </span>
+                                    <div>
+                                        <span className="font-semibold text-white">
+                                            {input.name}
+                                        </span>
+                                        <span className="text-zinc-400">
+                                            ({input.parameterTypes.join(", ")})
+                                        </span>
+                                        <span className="text-zinc-600">
+                                            {" "}
+                                            -&gt;{" "}
+                                        </span>
+                                        <span className="text-zinc-400">
+                                            {input.returnType}
+                                        </span>
+                                    </div>
+                                    <div className="font-mono text-xs text-zinc-500">
+                                        raw: {input.rawName}
+                                    </div>
+                                    {input.description && (
+                                        <div className="mt-1 font-sans text-xs text-zinc-400">
+                                            {input.description}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -196,12 +212,12 @@ export function EntityDetail({
                         <div className="mt-2 space-y-1.5">
                             {data.outputs.map((output) => (
                                 <div
-                                    key={output.externalName}
-                                    id={`output-${output.externalName}`}
+                                    key={output.schemaName}
+                                    id={`output-${output.schemaName}`}
                                     className="flex scroll-mt-24 flex-wrap items-center gap-1.5 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm [&:target]:border-accent/50"
                                 >
                                     <span className="font-semibold text-white">
-                                        {output.externalName}
+                                        {output.name}
                                     </span>
                                 </div>
                             ))}

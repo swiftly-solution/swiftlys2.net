@@ -144,26 +144,31 @@ export async function GET(request: NextRequest) {
         flags: entityClass?.flags ?? [],
         schemaLink,
         parentClasses,
-        inputs: (datamap.fields.inputs ?? []).map((f) => ({
-            externalName: f.externalName,
-            fieldType: f.fieldType,
+        inputs: datamap.inputs.map((f) => ({
+            name: f.name,
+            rawName: f.raw_name,
+            description: f.description,
+            returnType: f.return_type,
+            parameterNames: f.parameter_names,
+            parameterTypes: f.parameter_types,
         })),
-        outputs: (datamap.fields.outputs ?? []).map((f) => ({
-            externalName: f.externalName,
+        outputs: datamap.outputs.map((f) => ({
+            name: f.name,
+            schemaName: f.schema_name,
         })),
-        members: (datamap.fields.members ?? []).map((f) => {
+        members: datamap.members.map((f) => {
             const owner = resolveMemberFieldOwner(
                 fieldOwnerChain,
                 displaysCache,
                 allClassNames,
                 allEnumNames,
-                f.fieldName,
+                f.schema_name,
             );
             return {
-                externalName: f.externalName,
-                fieldType: f.fieldType,
-                fieldName: f.fieldName,
-                csharpFieldName: owner?.csharpFieldName ?? f.fieldName,
+                name: f.name,
+                schemaName: f.schema_name,
+                type: f.type,
+                csharpFieldName: owner?.csharpFieldName ?? f.schema_name,
                 schemaClassName: owner?.className ?? null,
                 schemaProject: owner?.link.project ?? null,
             };

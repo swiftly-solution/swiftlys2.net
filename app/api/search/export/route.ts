@@ -160,44 +160,44 @@ export async function GET(request: NextRequest) {
                     url: entityUrl,
                 });
 
-                for (const member of dm.fields.members ?? []) {
+                for (const member of dm.members) {
                     write({
                         id: sanitizeId([
                             "entity_member",
                             dm.class_name,
-                            member.fieldName,
+                            member.schema_name,
                         ]),
                         type: "entity_member",
-                        name: member.externalName,
+                        name: member.name,
                         owner: dm.class_name,
-                        description: member.fieldName,
-                        url: `${entityUrl}#member-${encodeURIComponent(member.fieldName)}`,
+                        description: member.schema_name,
+                        url: `${entityUrl}#member-${encodeURIComponent(member.schema_name)}`,
                     });
                 }
-                for (const input of dm.fields.inputs ?? []) {
+                for (const input of dm.inputs) {
                     write({
                         id: sanitizeId([
                             "entity_input",
                             dm.class_name,
-                            input.externalName,
+                            input.raw_name,
                         ]),
                         type: "entity_input",
-                        name: input.externalName,
+                        name: input.name,
                         owner: dm.class_name,
-                        url: `${entityUrl}#input-${encodeURIComponent(input.externalName)}`,
+                        url: `${entityUrl}#input-${encodeURIComponent(input.raw_name)}`,
                     });
                 }
-                for (const output of dm.fields.outputs ?? []) {
+                for (const output of dm.outputs) {
                     write({
                         id: sanitizeId([
                             "entity_output",
                             dm.class_name,
-                            output.externalName,
+                            output.schema_name,
                         ]),
                         type: "entity_output",
-                        name: output.externalName,
+                        name: output.name,
                         owner: dm.class_name,
-                        url: `${entityUrl}#output-${encodeURIComponent(output.externalName)}`,
+                        url: `${entityUrl}#output-${encodeURIComponent(output.schema_name)}`,
                     });
                 }
             }

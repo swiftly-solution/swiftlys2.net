@@ -1,5 +1,7 @@
 import type {
-    DatamapField,
+    DatamapInput,
+    DatamapMember,
+    DatamapOutput,
     EntitiesDump,
     EntityClass,
 } from "@/lib/entities/types";
@@ -14,11 +16,23 @@ export type EntityClassDiff = {
     after?: EntityClass;
 };
 
-export type FieldDiffEntry = {
-    fieldName: string;
+export type MemberDiffEntry = {
+    key: string;
     change: ChangeKind;
-    before?: DatamapField;
-    after?: DatamapField;
+    before?: DatamapMember;
+    after?: DatamapMember;
+};
+export type OutputDiffEntry = {
+    key: string;
+    change: ChangeKind;
+    before?: DatamapOutput;
+    after?: DatamapOutput;
+};
+export type InputDiffEntry = {
+    key: string;
+    change: ChangeKind;
+    before?: DatamapInput;
+    after?: DatamapInput;
 };
 
 export type NameDiffEntry = { name: string; change: "added" | "removed" };
@@ -27,9 +41,9 @@ export type DatamapDiff = {
     key: string;
     className: string;
     change: ChangeKind;
-    memberDiffs: FieldDiffEntry[];
-    inputDiffs: FieldDiffEntry[];
-    outputDiffs: FieldDiffEntry[];
+    memberDiffs: MemberDiffEntry[];
+    inputDiffs: InputDiffEntry[];
+    outputDiffs: OutputDiffEntry[];
     thinkFunctionDiffs: NameDiffEntry[];
 };
 
@@ -50,37 +64,74 @@ function entityClassesEqual(a: EntityClass, b: EntityClass): boolean {
     );
 }
 
-function fieldsEqual(a: DatamapField, b: DatamapField): boolean {
-    return a.externalName === b.externalName && a.fieldType === b.fieldType;
-}
+function diffList<T, E extends { key: string; change: ChangeKind; before?: T; after?: T }>(
+    before: T[],
+    after: T[],
+    getKey: (item: T) => string,
+    equal: (a: T, b: T) => boolean,
+): E[] {
+    const beforeByKey = new Map(before.map((item) => [getKey(item), item]));
+    const afterByKey = new Map(after.map((item) => [getKey(item), item]));
+    const diffs: E[] = [];
 
-function diffFieldList(
-    before: DatamapField[],
-    after: DatamapField[],
-): FieldDiffEntry[] {
-    const beforeByName = new Map(before.map((f) => [f.fieldName, f]));
-    const afterByName = new Map(after.map((f) => [f.fieldName, f]));
-    const diffs: FieldDiffEntry[] = [];
-
-    for (const [fieldName, field] of beforeByName) {
-        if (!afterByName.has(fieldName)) {
-            diffs.push({ fieldName, change: "removed", before: field });
+    for (const [key, item] of beforeByKey) {
+        if (!afterByKey.has(key)) {
+            diffs.push({ key, change: "removed", before: item } as E);
         }
     }
-    for (const [fieldName, field] of afterByName) {
-        const prev = beforeByName.get(fieldName);
+    for (const [key, item] of afterByKey) {
+        const prev = beforeByKey.get(key);
         if (!prev) {
-            diffs.push({ fieldName, change: "added", after: field });
-        } else if (!fieldsEqual(prev, field)) {
-            diffs.push({
-                fieldName,
-                change: "changed",
-                before: prev,
-                after: field,
-            });
+            diffs.push({ key, change: "added", after: item } as E);
+        } else if (!equal(prev, item)) {
+            diffs.push({ key, change: "changed", before: prev, after: item } as E);
         }
     }
     return diffs;
+}
+
+function memberEqual(a: DatamapMember, b: DatamapMember): boolean {
+    return a.name === b.name && a.type === b.type;
+}
+
+function outputEqual(a: DatamapOutput, b: DatamapOutput): boolean {
+    return a.name === b.name;
+}
+
+function inputEqual(a: DatamapInput, b: DatamapInput): boolean {
+    return (
+        a.name === b.name &&
+        a.description === b.description &&
+        a.return_type === b.return_type &&
+        JSON.stringify(a.parameter_types) === JSON.stringify(b.parameter_types)
+    );
+}
+
+function diffMemberList(before: DatamapMember[], after: DatamapMember[]): MemberDiffEntry[] {
+    return diffList<DatamapMember, MemberDiffEntry>(
+        before,
+        after,
+        (m) => m.schema_name,
+        memberEqual,
+    );
+}
+
+function diffOutputList(before: DatamapOutput[], after: DatamapOutput[]): OutputDiffEntry[] {
+    return diffList<DatamapOutput, OutputDiffEntry>(
+        before,
+        after,
+        (o) => o.schema_name,
+        outputEqual,
+    );
+}
+
+function diffInputList(before: DatamapInput[], after: DatamapInput[]): InputDiffEntry[] {
+    return diffList<DatamapInput, InputDiffEntry>(
+        before,
+        after,
+        (i) => i.raw_name,
+        inputEqual,
+    );
 }
 
 function diffThinkFunctions(
@@ -176,9 +227,9 @@ export function computeEntitiesDiff(
                 key,
                 className: b.class_name,
                 change: "removed",
-                memberDiffs: diffFieldList(b.fields.members ?? [], []),
-                inputDiffs: diffFieldList(b.fields.inputs ?? [], []),
-                outputDiffs: diffFieldList(b.fields.outputs ?? [], []),
+                memberDiffs: diffMemberList(b.members, []),
+                inputDiffs: diffInputList(b.inputs, []),
+                outputDiffs: diffOutputList(b.outputs, []),
                 thinkFunctionDiffs: diffThinkFunctions(b.think_functions, []),
             });
             continue;
@@ -188,26 +239,17 @@ export function computeEntitiesDiff(
                 key,
                 className: a.class_name,
                 change: "added",
-                memberDiffs: diffFieldList([], a.fields.members ?? []),
-                inputDiffs: diffFieldList([], a.fields.inputs ?? []),
-                outputDiffs: diffFieldList([], a.fields.outputs ?? []),
+                memberDiffs: diffMemberList([], a.members),
+                inputDiffs: diffInputList([], a.inputs),
+                outputDiffs: diffOutputList([], a.outputs),
                 thinkFunctionDiffs: diffThinkFunctions([], a.think_functions),
             });
             continue;
         }
         if (a && b) {
-            const memberDiffs = diffFieldList(
-                b.fields.members ?? [],
-                a.fields.members ?? [],
-            );
-            const inputDiffs = diffFieldList(
-                b.fields.inputs ?? [],
-                a.fields.inputs ?? [],
-            );
-            const outputDiffs = diffFieldList(
-                b.fields.outputs ?? [],
-                a.fields.outputs ?? [],
-            );
+            const memberDiffs = diffMemberList(b.members, a.members);
+            const inputDiffs = diffInputList(b.inputs, a.inputs);
+            const outputDiffs = diffOutputList(b.outputs, a.outputs);
             const thinkFunctionDiffs = diffThinkFunctions(
                 b.think_functions,
                 a.think_functions,

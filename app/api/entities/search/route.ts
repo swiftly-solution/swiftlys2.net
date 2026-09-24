@@ -2,17 +2,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getEntitiesDump } from "@/lib/entities/dump";
 import { getGame } from "@/lib/schema/games";
 import { toFieldName, toInterfaceName } from "@/lib/schema/codegen/csharp";
-import type { DatamapField } from "@/lib/entities/types";
+import type { DatamapInput, DatamapMember, DatamapOutput } from "@/lib/entities/types";
 
 const MAX_RESULTS = 100;
 const MAX_CLASS_RESULTS = 20;
 
-export type EntityFieldSearchResult = {
-    className: string;
-    kind: "input" | "output" | "member";
-    externalName: string;
-    fieldName: string;
-};
+export type EntityFieldSearchResult =
+    | { className: string; kind: "member"; name: string; schemaName: string }
+    | { className: string; kind: "output"; name: string; schemaName: string }
+    | { className: string; kind: "input"; name: string; rawName: string };
 
 export type EntitySearchResponse = {
     classes: string[];
@@ -25,27 +23,36 @@ function isKind(
     return value === "input" || value === "output" || value === "member";
 }
 
-function fieldMatches(
-    field: DatamapField,
+function schemaFieldMatches(
+    field: DatamapMember | DatamapOutput,
     q: string,
     fieldParam: string,
 ): boolean {
-    const csharpName = toFieldName(field.fieldName).toLowerCase();
-    const fieldNameMatches = (needle: string) =>
-        field.fieldName.toLowerCase().includes(needle) ||
+    const csharpName = toFieldName(field.schema_name).toLowerCase();
+    const schemaNameMatches = (needle: string) =>
+        field.schema_name.toLowerCase().includes(needle) ||
         csharpName.includes(needle);
 
     if (fieldParam) {
-        if (!fieldNameMatches(fieldParam)) return false;
+        if (!schemaNameMatches(fieldParam)) return false;
         if (q) {
-            return field.externalName.toLowerCase().includes(q) || fieldNameMatches(q);
+            return field.name.toLowerCase().includes(q) || schemaNameMatches(q);
         }
         return true;
     }
     if (q) {
-        return field.externalName.toLowerCase().includes(q) || fieldNameMatches(q);
+        return field.name.toLowerCase().includes(q) || schemaNameMatches(q);
     }
     return true;
+}
+
+function inputMatches(field: DatamapInput, q: string): boolean {
+    if (!q) return true;
+    return (
+        field.name.toLowerCase().includes(q) ||
+        field.raw_name.toLowerCase().includes(q) ||
+        field.description.toLowerCase().includes(q)
+    );
 }
 
 export async function GET(request: NextRequest) {
@@ -89,21 +96,39 @@ export async function GET(request: NextRequest) {
 
     const fields: EntityFieldSearchResult[] = [];
     outer: for (const dm of dump.datamaps) {
-        const groups: [EntityFieldSearchResult["kind"], DatamapField[]][] = [
-            ["input", dm.fields.inputs ?? []],
-            ["output", dm.fields.outputs ?? []],
-            ["member", dm.fields.members ?? []],
-        ];
-        for (const [kind, fieldsArr] of groups) {
-            if (kindParam && kindParam !== kind) continue;
-            for (const field of fieldsArr) {
+        if (!kindParam || kindParam === "member") {
+            for (const field of dm.members) {
                 if (fields.length >= MAX_RESULTS) break outer;
-                if (!fieldMatches(field, q, fieldParam)) continue;
+                if (!schemaFieldMatches(field, q, fieldParam)) continue;
                 fields.push({
                     className: dm.class_name,
-                    kind,
-                    externalName: field.externalName,
-                    fieldName: field.fieldName,
+                    kind: "member",
+                    name: field.name,
+                    schemaName: field.schema_name,
+                });
+            }
+        }
+        if (!kindParam || kindParam === "output") {
+            for (const field of dm.outputs) {
+                if (fields.length >= MAX_RESULTS) break outer;
+                if (!schemaFieldMatches(field, q, fieldParam)) continue;
+                fields.push({
+                    className: dm.class_name,
+                    kind: "output",
+                    name: field.name,
+                    schemaName: field.schema_name,
+                });
+            }
+        }
+        if ((!kindParam || kindParam === "input") && !fieldParam) {
+            for (const field of dm.inputs) {
+                if (fields.length >= MAX_RESULTS) break outer;
+                if (!inputMatches(field, q)) continue;
+                fields.push({
+                    className: dm.class_name,
+                    kind: "input",
+                    name: field.name,
+                    rawName: field.raw_name,
                 });
             }
         }

@@ -124,7 +124,7 @@ export const entityToolGroup: ToolGroup = {
                     })),
                     fields: data.fields.map((item) => ({
                         ...item,
-                        url: `${ctx.baseUrl}/entity-viewer/${game}/${encodeURIComponent(item.className)}#${item.kind}-${encodeURIComponent(item.kind === "member" ? item.fieldName : item.externalName)}`,
+                        url: `${ctx.baseUrl}/entity-viewer/${game}/${encodeURIComponent(item.className)}#${item.kind}-${encodeURIComponent(item.kind === "input" ? item.rawName : item.schemaName)}`,
                     })),
                 });
             },

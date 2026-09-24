@@ -18,14 +18,16 @@ const KIND_LABEL: Record<EntityFieldSearchResult["kind"], string> = {
     member: "M",
 };
 
-const KIND_ANCHOR: Record<
-    EntityFieldSearchResult["kind"],
-    (match: EntityFieldSearchResult) => string
-> = {
-    input: (m) => `input-${m.externalName}`,
-    output: (m) => `output-${m.externalName}`,
-    member: (m) => `member-${m.fieldName}`,
-};
+function kindAnchor(match: EntityFieldSearchResult): string {
+    return match.kind === "input"
+        ? `input-${match.rawName}`
+        : `${match.kind}-${match.schemaName}`;
+}
+
+function matchKey(match: EntityFieldSearchResult): string {
+    const id = match.kind === "input" ? match.rawName : match.schemaName;
+    return `${match.className}/${match.kind}/${id}`;
+}
 
 export function EntitiesSearchResults({ gameId }: { gameId: string }) {
     const { query } = useViewerSearch();
@@ -114,8 +116,8 @@ export function EntitiesSearchResults({ gameId }: { gameId: string }) {
                     <div className="mt-1.5 space-y-1">
                         {fieldMatches.map((match) => (
                             <Link
-                                key={`${match.className}/${match.kind}/${match.fieldName}`}
-                                href={`/entity-viewer/${gameId}/${encodeURIComponent(match.className)}#${KIND_ANCHOR[match.kind](match)}`}
+                                key={matchKey(match)}
+                                href={`/entity-viewer/${gameId}/${encodeURIComponent(match.className)}#${kindAnchor(match)}`}
                                 className="flex items-center gap-2 rounded-lg px-2 py-1 font-mono text-xs text-zinc-300 transition-colors hover:bg-white/[0.05] hover:text-accent"
                             >
                                 <span className="text-zinc-600">
@@ -124,7 +126,7 @@ export function EntitiesSearchResults({ gameId }: { gameId: string }) {
                                 <span className="min-w-0 flex-1 truncate">
                                     {match.className}
                                     <span className="text-zinc-600">.</span>
-                                    {match.externalName}
+                                    {match.name}
                                 </span>
                             </Link>
                         ))}

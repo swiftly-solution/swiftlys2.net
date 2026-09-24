@@ -28,14 +28,14 @@ export async function getEntitiesDump(
                     getFileUrl(game, game.entitiesPath, ref),
                     "Entities dump",
                 ),
-                fetchJson<{ datamaps: Datamap[] }>(
+                fetchJson<Datamap[]>(
                     getFileUrl(game, game.datamapsPath, ref),
                     "Datamaps dump",
                 ),
             ]);
             return {
                 entityClasses: entitiesRaw.entity_classes,
-                datamaps: datamapsRaw.datamaps,
+                datamaps: datamapsRaw,
             };
         },
     });
