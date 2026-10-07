@@ -22,6 +22,7 @@ export type ApiMember = {
     sourceUrl?: string;
     summary?: string;
     declaration: string;
+    default?: number;
     parameters?: ApiParameter[];
     returns?: { type?: TypeRefToken[]; description?: string };
     valueType?: TypeRefToken[];

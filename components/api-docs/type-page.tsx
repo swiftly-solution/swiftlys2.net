@@ -123,7 +123,42 @@ export function TypePage({
                         View source
                     </a>
                 )}
-                {sections.map(({ title, members }) => (
+                {type.type === "Enum" && type.fields && type.fields.length > 0 && (
+                    <section
+                        id={slugify("Fields")}
+                        className="mt-8 scroll-mt-24"
+                    >
+                        <div className="space-y-1.5">
+                            {type.fields.map((field) => (
+                                <div
+                                    key={field.uid}
+                                    id={slugify(field.uid)}
+                                    className="flex scroll-mt-24 items-center justify-between gap-4 rounded-lg border border-white/10 bg-black/20 px-4 py-3 font-mono text-sm"
+                                >
+                                    <div className="min-w-0">
+                                        <span className="font-semibold text-white">{field.name}</span>
+                                        {field.summary && (
+                                            <p className="mt-1 font-sans text-xs leading-relaxed text-zinc-500">
+                                                <InlineText
+                                                    text={field.summary}
+                                                    branch={branch}
+                                                    uidIndex={uidIndex}
+                                                    schemaIndex={schemaIndex}
+                                                />
+                                            </p>
+                                        )}
+                                    </div>
+                                    {field.default !== undefined && (
+                                        <span className="shrink-0 text-xs text-zinc-500">
+                                            {field.default}
+                                        </span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+                {sections.filter(({ title }) => !(type.type === "Enum" && title === "Fields")).map(({ title, members }) => (
                     <MemberSection
                         key={title}
                         title={title}
