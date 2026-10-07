@@ -21,6 +21,7 @@ export type ApiMember = {
     uid: string;
     sourceUrl?: string;
     summary?: string;
+    description?: string;
     declaration: string;
     default?: number;
     parameters?: ApiParameter[];

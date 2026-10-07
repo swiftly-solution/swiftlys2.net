@@ -137,10 +137,10 @@ export function TypePage({
                                 >
                                     <div className="min-w-0">
                                         <span className="font-semibold text-white">{field.name}</span>
-                                        {field.summary && (
+                                        {(field.summary ?? field.description) && (
                                             <p className="mt-1 font-sans text-xs leading-relaxed text-zinc-500">
                                                 <InlineText
-                                                    text={field.summary}
+                                                    text={field.summary ?? field.description!}
                                                     branch={branch}
                                                     uidIndex={uidIndex}
                                                     schemaIndex={schemaIndex}
