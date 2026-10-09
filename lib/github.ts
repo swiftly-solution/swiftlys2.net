@@ -207,7 +207,7 @@ export type ReleaseWithAssets = {
 let cachedReleasesWithAssets: ReleaseWithAssets[] | null = null;
 
 export async function getReleasesWithAssets(
-    limit = 20,
+    limit = 100,
 ): Promise<ReleaseWithAssets[]> {
     try {
         const data = await githubFetch(`/releases?per_page=${limit}`);
