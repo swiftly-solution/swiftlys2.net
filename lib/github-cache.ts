@@ -59,16 +59,43 @@ export type CachedDumpOptions<T> = {
     latestRef?: string;
 };
 
-export async function getCachedGithubDump<T>(
-    opts: CachedDumpOptions<T>,
-): Promise<T> {
+const MAX_HISTORICAL_DUMPS = 8;
+const historicalCache = new Map<string, unknown>();
+
+const inflight = new Map<string, Promise<unknown>>();
+
+export function getCachedGithubDump<T>(opts: CachedDumpOptions<T>): Promise<T> {
+    const pending = inflight.get(opts.key) as Promise<T> | undefined;
+    if (pending) return pending;
+    const p = loadCachedGithubDump(opts).finally(() =>
+        inflight.delete(opts.key),
+    );
+    inflight.set(opts.key, p);
+    return p;
+}
+
+async function loadCachedGithubDump<T>(opts: CachedDumpOptions<T>): Promise<T> {
     const latestRef = opts.latestRef ?? LATEST_REF;
     const isLatest = opts.commit.ref === latestRef;
-    const entry = dumpCache.get(opts.key) as DumpEntry<T> | undefined;
 
-    if (entry && !isLatest) {
-        return entry.value;
+    if (!isLatest) {
+        const cached = historicalCache.get(opts.key) as T | undefined;
+        if (cached !== undefined) {
+            historicalCache.delete(opts.key);
+            historicalCache.set(opts.key, cached);
+            return cached;
+        }
+        const value = await opts.load();
+        historicalCache.set(opts.key, value);
+        if (historicalCache.size > MAX_HISTORICAL_DUMPS) {
+            historicalCache.delete(
+                historicalCache.keys().next().value as string,
+            );
+        }
+        return value;
     }
+
+    const entry = dumpCache.get(opts.key) as DumpEntry<T> | undefined;
 
     if (entry && Date.now() - entry.storedAt < MAX_STALE_MS) {
         const sha = await getLatestCommitSha(opts.commit);
@@ -79,9 +106,7 @@ export async function getCachedGithubDump<T>(
 
     try {
         const value = await opts.load();
-        const sha = isLatest
-            ? await getLatestCommitSha(opts.commit)
-            : opts.commit.ref;
+        const sha = await getLatestCommitSha(opts.commit);
         dumpCache.set(opts.key, { value, sha, storedAt: Date.now() });
         return value;
     } catch (error) {

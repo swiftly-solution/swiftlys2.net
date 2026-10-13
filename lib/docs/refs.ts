@@ -12,8 +12,8 @@ import { getGameEventsDump } from "@/lib/gameevents/dump";
 import { findGameEvent } from "@/lib/gameevents/queries";
 import { getConvarsDump } from "@/lib/convars/dump";
 import { getApiDump } from "@/lib/api-docs/dump";
-import { apiDocsHref, buildNavTree, findType } from "@/lib/api-docs/tree";
-import type { ApiBranch, ApiType } from "@/lib/api-docs/types";
+import { apiDocsHref, slugify } from "@/lib/api-docs/tree";
+import type { ApiBranch, ApiDump, ApiType } from "@/lib/api-docs/types";
 
 export type DocRef = { href: string; label: string };
 
@@ -117,44 +117,58 @@ const MEMBER_LISTS = [
 
 const API_BRANCH_ORDER: readonly ApiBranch[] = ["stable", "beta"];
 
+type ApiEntry = { categorySlug: string; typeSlug: string; type: ApiType };
+const apiIndexCache = new WeakMap<ApiDump, Map<string, ApiEntry>>();
+
+function getApiIndex(dump: ApiDump): Map<string, ApiEntry> {
+    let index = apiIndexCache.get(dump);
+    if (index) return index;
+    index = new Map();
+    for (const category of dump.categories) {
+        const categorySlug = slugify(category.category);
+        for (const type of category.types) {
+            if (!index.has(type.name)) {
+                index.set(type.name, {
+                    categorySlug,
+                    typeSlug: slugify(type.name),
+                    type,
+                });
+            }
+        }
+    }
+    apiIndexCache.set(dump, index);
+    return index;
+}
+
 async function resolveApiRefInBranch(
     branch: ApiBranch,
     name: string,
     member?: string,
 ): Promise<DocRef | null> {
     try {
-        const dump = await getApiDump(branch);
-        for (const category of buildNavTree(dump)) {
-            const navType = category.types.find((t) => t.name === name);
-            if (!navType) continue;
+        const entry = getApiIndex(await getApiDump(branch)).get(name);
+        if (!entry) return null;
 
-            let anchor = "";
-            if (member) {
-                const fullType = findType(
-                    dump,
-                    category.slug,
-                    navType.slug,
-                )?.type;
-                for (const key of MEMBER_LISTS) {
-                    const found = fullType?.[key]?.find(
-                        (m) => m.name.toLowerCase() === member.toLowerCase(),
-                    );
-                    if (found) {
-                        anchor = `#${found.uid
-                            .toLowerCase()
-                            .replace(/[^a-z0-9]+/g, "-")
-                            .replace(/^-+|-+$/g, "")}`;
-                        break;
-                    }
+        let anchor = "";
+        if (member) {
+            for (const key of MEMBER_LISTS) {
+                const found = entry.type[key]?.find(
+                    (m) => m.name.toLowerCase() === member.toLowerCase(),
+                );
+                if (found) {
+                    anchor = `#${found.uid
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, "-")
+                        .replace(/^-+|-+$/g, "")}`;
+                    break;
                 }
             }
-
-            return {
-                href: `${apiDocsHref(branch, category.slug, navType.slug)}${anchor}`,
-                label: member ? `${name}.${member}` : name,
-            };
         }
-        return null;
+
+        return {
+            href: `${apiDocsHref(branch, entry.categorySlug, entry.typeSlug)}${anchor}`,
+            label: member ? `${name}.${member}` : name,
+        };
     } catch {
         return null;
     }
