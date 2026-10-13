@@ -4,12 +4,15 @@ import { buildNameIndex } from "@/lib/schema/queries";
 import { getEntitiesDump } from "@/lib/entities/dump";
 import { findEntityEntry } from "@/lib/entities/queries";
 import { getProtobufDump } from "@/lib/protobuf/dump";
-import { buildProtobufTypeIndex, resolveProtobufType } from "@/lib/protobuf/queries";
+import {
+    buildProtobufTypeIndex,
+    resolveProtobufType,
+} from "@/lib/protobuf/queries";
 import { getGameEventsDump } from "@/lib/gameevents/dump";
 import { findGameEvent } from "@/lib/gameevents/queries";
 import { getConvarsDump } from "@/lib/convars/dump";
 import { getApiDump } from "@/lib/api-docs/dump";
-import { apiDocsHref, buildNavTree, findType, isApiBranch } from "@/lib/api-docs/tree";
+import { apiDocsHref, buildNavTree, findType } from "@/lib/api-docs/tree";
 import type { ApiBranch, ApiType } from "@/lib/api-docs/types";
 
 export type DocRef = { href: string; label: string };
@@ -112,12 +115,13 @@ const MEMBER_LISTS = [
     "fields",
 ] as const satisfies readonly (keyof ApiType)[];
 
-export async function resolveApiRef(
+const API_BRANCH_ORDER: readonly ApiBranch[] = ["stable", "beta"];
+
+async function resolveApiRefInBranch(
+    branch: ApiBranch,
     name: string,
-    branchInput?: string,
     member?: string,
 ): Promise<DocRef | null> {
-    const branch: ApiBranch = isApiBranch(branchInput) ? branchInput : "stable";
     try {
         const dump = await getApiDump(branch);
         for (const category of buildNavTree(dump)) {
@@ -126,13 +130,20 @@ export async function resolveApiRef(
 
             let anchor = "";
             if (member) {
-                const fullType = findType(dump, category.slug, navType.slug)?.type;
+                const fullType = findType(
+                    dump,
+                    category.slug,
+                    navType.slug,
+                )?.type;
                 for (const key of MEMBER_LISTS) {
                     const found = fullType?.[key]?.find(
                         (m) => m.name.toLowerCase() === member.toLowerCase(),
                     );
                     if (found) {
-                        anchor = `#${found.uid.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")}`;
+                        anchor = `#${found.uid
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, "-")
+                            .replace(/^-+|-+$/g, "")}`;
                         break;
                     }
                 }
@@ -147,4 +158,15 @@ export async function resolveApiRef(
     } catch {
         return null;
     }
+}
+
+export async function resolveApiRef(
+    name: string,
+    member?: string,
+): Promise<DocRef | null> {
+    for (const branch of API_BRANCH_ORDER) {
+        const ref = await resolveApiRefInBranch(branch, name, member);
+        if (ref) return ref;
+    }
+    return null;
 }

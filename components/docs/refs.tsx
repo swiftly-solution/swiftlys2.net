@@ -114,13 +114,11 @@ export async function ConvarRef({
 export async function ApiRef({
     name,
     member,
-    branch,
 }: {
     name: string;
     member?: string;
-    branch?: string;
 }) {
-    const ref = await resolveApiRef(name, branch, member);
+    const ref = await resolveApiRef(name, member);
     return ref ? (
         <RefLink kind="API" docRef={ref} />
     ) : (
