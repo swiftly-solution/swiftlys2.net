@@ -14,7 +14,7 @@ export function githubHeaders() {
     return headers;
 }
 
-async function githubFetch(path: string) {
+export async function githubFetch(path: string) {
     const res = await fetch(`${API_BASE}${path}`, {
         headers: githubHeaders(),
         next: { revalidate: REVALIDATE_SECONDS },
@@ -249,14 +249,22 @@ export function findDownloadUrl(
     const release = releases.find((r) => r.prerelease === wantPrerelease);
     if (!release) return null;
 
-    const asset = release.assets.find((a) => {
+    const asset = findAsset(release.assets, os, wantRuntimes);
+
+    return asset ? { tag: release.tag, url: asset.url } : null;
+}
+
+export function findAsset(
+    assets: ReleaseAsset[],
+    os: "windows" | "linux",
+    wantRuntimes: boolean,
+): ReleaseAsset | undefined {
+    return assets.find((a) => {
         if (!a.name.startsWith(`swiftlys2-${os}-`)) return false;
         if (a.name.includes("-pdb")) return false;
         const hasRuntimes = a.name.includes("-with-runtimes");
         return wantRuntimes ? hasRuntimes : !hasRuntimes;
     });
-
-    return asset ? { tag: release.tag, url: asset.url } : null;
 }
 
 export { REPO_URL };

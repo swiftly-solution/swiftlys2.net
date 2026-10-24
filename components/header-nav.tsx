@@ -14,6 +14,7 @@ const DISCORD_URL = "https://swiftlys2.net/discord";
 const NAV = [
     { label: "docs", href: "/docs" },
     { label: "api", href: "/api-docs/stable" },
+    { label: "releases", href: "/releases" },
     { label: "ai", href: "/ai" },
 ];
 
@@ -86,7 +87,7 @@ export function HeaderNav() {
     return (
         <>
             {NAV.map((item) => (
-                <span key={item.href} className="flex items-center gap-3">
+                <span key={item.href} className="flex items-center gap-1.5">
                     <Sep />
                     <Link href={item.href} className="transition-colors hover:text-white">
                         {item.label}
@@ -95,7 +96,7 @@ export function HeaderNav() {
             ))}
 
             {showCompact && (
-                <span className={`flex items-center gap-3 ${compactVis}`}>
+                <span className={`flex items-center gap-1.5 ${compactVis}`}>
                     <Sep />
                     <ViewersMenu />
                 </span>
@@ -105,7 +106,7 @@ export function HeaderNav() {
                 VIEWERS.map((viewer) => (
                     <span
                         key={viewer.href}
-                        className={`flex items-center gap-3 ${expandedVis}`}
+                        className={`flex items-center gap-1.5 ${expandedVis}`}
                     >
                         <Sep />
                         <Link
